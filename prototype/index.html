@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>在线编程教学管理平台 - 测试版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .editor-textarea {
+            tab-size: 4;
+            font-family: "Fira Code", "Consolas", "Courier New", monospace;
+            white-space: pre;
+        }
+
+        .resizer {
+            width: 4px;
+            background-color: #1e293b;
+            cursor: col-resize;
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active { background-color: #3b82f6; }
+        #lineNumbers::-webkit-scrollbar { display: none; }
+        .modal-mask { backdrop-filter: blur(6px); }
+        .view-hidden { display: none !important; }
+        .prose-lite p { margin: 0.5rem 0; }
+        .prose-lite ul { list-style: disc; padding-left: 1.2rem; }
+        .prose-lite ol { list-style: decimal; padding-left: 1.2rem; }
+        .prose-lite code { background: rgba(15,23,42,.06); padding: 0.125rem 0.35rem; border-radius: 0.35rem; }
+        .prose-lite pre { background: rgba(15,23,42,.04); padding: 0.75rem; border-radius: 0.75rem; overflow: auto; }
+    </style>
+</head>
+<body class="h-screen overflow-hidden bg-slate-50 text-slate-800 flex flex-col font-sans select-none">
+
+    <!-- ========================================================= -->
+    <!-- 视图 1：全局平台大厅 -->
+    <!-- ========================================================= -->
+    <div id="view-dashboard" class="flex-1 flex flex-col h-full overflow-hidden">
+        <header class="h-16 shrink-0 bg-white border-b border-slate-200 px-8 flex items-center justify-between shadow-sm z-20">
+            <div class="flex items-center gap-8 min-w-0">
+                <div class="text-xl font-bold text-indigo-600 flex items-center gap-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                    <span id="sysNameDisplay">CodeEdu 教学平台</span>
+                </div>
+                <nav class="hidden md:flex items-center gap-1">
+                    <button onclick="switchDashboardTab('problems')" id="nav-problems" class="px-4 py-2 text-sm font-medium rounded-md text-indigo-600 bg-indigo-50 transition">公共题库</button>
+                    <button onclick="switchDashboardTab('contests')" id="nav-contests" class="px-4 py-2 text-sm font-medium rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition">编程比赛 / 测验</button>
+                    <button onclick="switchDashboardTab('classes')" id="nav-classes" class="teacher-only px-4 py-2 text-sm font-medium rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition view-hidden">班级管理</button>
+                </nav>
+            </div>
+
+            <div class="flex items-center gap-5 text-sm shrink-0">
+                <button onclick="openDocModal()" class="text-indigo-600 hover:text-indigo-800 font-medium transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    使用文档
+                </button>
+
+                <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                    <span class="text-xs text-slate-500 ml-2">视角:</span>
+                    <select id="roleSwitcher" onchange="changeRole(this.value)" class="bg-transparent border-none text-slate-700 text-sm font-medium outline-none cursor-pointer pr-2">
+                        <option value="student">👨‍🎓 学生</option>
+                        <option value="teacher">👩‍🏫 教师 / 管理员</option>
+                    </select>
+                </div>
+
+                <div class="h-6 w-px bg-slate-300"></div>
+
+                <div class="flex items-center gap-2 cursor-pointer hover:opacity-80" onclick="openSettingsModal()" title="系统设置">
+                    <div id="dashAvatar" class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white shadow-md">用</div>
+                    <span id="dashName" class="font-medium text-slate-700 hidden sm:block">用户</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-7xl mx-auto">
+
+                <!-- 公共题库 -->
+                <div id="tab-problems" class="space-y-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">公共题库</h2>
+                            <p class="text-sm text-slate-500 mt-1">教师可发布新题；发布比赛 / 测验时，可直接从这里勾题组卷。</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="dashboardSearchInput" oninput="renderDashboardProblems()" placeholder="搜索题号 / 标题 / 标签..." class="px-4 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-72 shadow-sm">
+                            <button onclick="openImportModal('problem')" class="teacher-only view-hidden px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                导入 / 发布题目
+                            </button>
+                            <button onclick="openContestBuilderModal()" class="teacher-only view-hidden px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V18a2 2 0 01-2 2z"></path>
+                                </svg>
+                                从题库组卷
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">题库总量</div>
+                            <div class="text-2xl font-bold text-slate-800" id="stat-problem-total">0</div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">简单题</div>
+                            <div class="text-2xl font-bold text-emerald-600" id="stat-problem-easy">0</div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">中等题</div>
+                            <div class="text-2xl font-bold text-amber-600" id="stat-problem-medium">0</div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">困难题</div>
+                            <div class="text-2xl font-bold text-rose-600" id="stat-problem-hard">0</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                <tr>
+                                    <th class="px-6 py-4 font-medium">状态</th>
+                                    <th class="px-6 py-4 font-medium">编号</th>
+                                    <th class="px-6 py-4 font-medium">题目名称</th>
+                                    <th class="px-6 py-4 font-medium">标签</th>
+                                    <th class="px-6 py-4 font-medium">难度</th>
+                                    <th class="px-6 py-4 font-medium">分值</th>
+                                    <th class="px-6 py-4 font-medium text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardProblemList" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 比赛 / 测验 -->
+                <div id="tab-contests" class="view-hidden space-y-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">比赛 / 测验大厅</h2>
+                            <p class="text-sm text-slate-500 mt-1">教师可从公共题库勾题，也可额外导入 JSON 题目后直接纳入本场测试。</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="openContestBuilderModal()" class="teacher-only view-hidden px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition">
+                                发布比赛 / 测验
+                            </button>
+                            <button onclick="openImportModal('contest')" class="teacher-only view-hidden px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-700 shadow-sm transition">
+                                导入比赛 JSON
+                            </button>
+                        </div>
+                    </div>
+                    <div id="contestListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                </div>
+
+                <!-- 班级管理 -->
+                <div id="tab-classes" class="view-hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">班级成绩管理</h2>
+                            <p class="text-sm text-slate-500 mt-1">支持导入学生名单与导出 CSV 成绩单。</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="openImportModal('student')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                导入学生名单
+                            </button>
+                            <button onclick="exportClassGradesCSV()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                导出成绩单 (CSV)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">班级总人数</div>
+                            <div class="text-2xl font-bold text-slate-800" id="stat-total-students">0 人</div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">平均完成题数</div>
+                            <div class="text-2xl font-bold text-slate-800" id="stat-avg-ac">0.0 题</div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">活跃率 (有提交)</div>
+                            <div class="text-2xl font-bold text-emerald-600" id="stat-active">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                <tr>
+                                    <th class="px-6 py-4 font-medium">学号</th>
+                                    <th class="px-6 py-4 font-medium">姓名</th>
+                                    <th class="px-6 py-4 font-medium">总分</th>
+                                    <th class="px-6 py-4 font-medium">AC 题数</th>
+                                    <th class="px-6 py-4 font-medium">最近提交</th>
+                                    <th class="px-6 py-4 font-medium text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100" id="classStudentList"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 视图 2：做题工作区 -->
+    <!-- ========================================================= -->
+    <div id="view-workspace" class="view-hidden flex-1 flex flex-col h-full overflow-hidden bg-[#0f172a]">
+        <header class="h-12 shrink-0 bg-[#0f172a] text-slate-300 border-b border-slate-800 px-4 flex items-center justify-between z-20">
+            <div class="flex items-center gap-4 min-w-0">
+                <button onclick="exitWorkspace()" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    返回大厅
+                </button>
+
+                <div class="h-4 w-px bg-slate-700 shrink-0"></div>
+
+                <button onclick="openProblemListModal()" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                    </svg>
+                    题目列表
+                </button>
+
+                <select id="problemSelector" onchange="switchProblem(this.value)" class="bg-transparent text-emerald-400 text-sm font-bold outline-none cursor-pointer hover:text-emerald-300 transition appearance-none pr-4 min-w-0"></select>
+
+                <div id="workspaceContextBadge" class="hidden text-xs px-2 py-1 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-300 truncate max-w-[260px]"></div>
+            </div>
+
+            <div class="text-xs text-slate-500 font-mono tracking-wider flex items-center gap-3 shrink-0">
+                <span class="hidden sm:inline">环境隔离中 · 数据自动存档</span>
+                <div id="wsAvatar" class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white text-xs">用</div>
+            </div>
+        </header>
+
+        <div class="flex-1 flex overflow-hidden relative" id="mainContainerWorkspace">
+            <section id="leftPanel" class="bg-white flex flex-col overflow-hidden select-text" style="width: 45%;">
+                <div class="shrink-0 border-b border-slate-200 px-6 pt-5 pb-4 bg-white">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2" id="ui-title-area"></div>
+                            <div class="flex flex-wrap gap-2 text-xs" id="ui-tags-area"></div>
+                        </div>
+                        <div class="text-right text-xs text-slate-500">
+                            <div class="text-emerald-600 font-bold mb-1">满分: <span id="ui-score">100</span> 分</div>
+                            <div>通过率 <span class="font-semibold text-slate-700" id="ui-pass-rate">--</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6 bg-slate-50">
+                    <div id="ui-description" class="prose-lite text-slate-700 leading-relaxed space-y-3 text-sm max-w-none"></div>
+                    <div>
+                        <h2 class="font-semibold text-slate-900 mb-3">示例</h2>
+                        <div id="ui-examples" class="space-y-3"></div>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-slate-900 mb-3">约束</h2>
+                        <div id="ui-constraints" class="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700 space-y-1 font-mono shadow-sm"></div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="dragResizer" class="resizer shrink-0 flex flex-col justify-center items-center">
+                <div class="w-1 h-8 bg-slate-500 rounded-full"></div>
+            </div>
+
+            <section id="rightPanel" class="flex-1 bg-[#0f172a] flex flex-col overflow-hidden" style="width: 55%;">
+                <div class="h-11 shrink-0 bg-[#111827] border-b border-slate-800 px-4 flex items-center justify-between select-none gap-3">
+                    <div class="flex items-center gap-3 text-sm min-w-0">
+                        <select id="languageSelect" onchange="switchLanguage()" class="bg-slate-800 text-slate-200 px-2 py-1 rounded outline-none border border-slate-700 cursor-pointer hover:bg-slate-700 transition"></select>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="fillDemoAnswer()" class="text-xs px-3 py-1.5 rounded border border-slate-600 text-slate-300 hover:bg-slate-700 transition">✨ 演示代码</button>
+                        <button onclick="resetCode()" class="text-xs px-3 py-1.5 rounded border border-slate-600 text-rose-300 hover:bg-rose-900/30 transition">↺ 重置代码</button>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex overflow-hidden relative bg-[#0f172a]">
+                    <div id="lineNumbers" class="w-12 shrink-0 bg-[#111827] border-r border-slate-800 text-right pr-3 pt-4 pb-4 font-mono text-sm text-slate-600 overflow-y-auto select-none">1</div>
+                    <textarea id="codeEditor" class="editor-textarea flex-1 w-full h-full resize-none outline-none bg-transparent text-slate-200 pt-4 pb-4 pl-4 pr-4 leading-relaxed text-sm" spellcheck="false"></textarea>
+                </div>
+
+                <div class="shrink-0 border-t border-slate-700 bg-[#111827] flex flex-col transition-all duration-300" id="consoleContainer">
+                    <div class="px-4 pt-2">
+                        <div class="flex gap-2 text-sm mb-2 flex-wrap">
+                            <button onclick="switchBottomTab('case')" id="tabCase" class="bottom-tab px-4 py-1.5 rounded-t-md bg-slate-800 text-white border-t border-l border-r border-slate-700">测试用例</button>
+                            <button onclick="switchBottomTab('result')" id="tabResult" class="bottom-tab px-4 py-1.5 rounded-t-md text-slate-400 hover:text-slate-200 border border-transparent">判题结果</button>
+                            <button onclick="switchBottomTab('log')" id="tabLog" class="bottom-tab px-4 py-1.5 rounded-t-md text-slate-400 hover:text-slate-200 border border-transparent">运行日志</button>
+                            <button onclick="switchBottomTab('history')" id="tabHistory" class="bottom-tab px-4 py-1.5 rounded-t-md text-slate-400 hover:text-slate-200 border border-transparent">我的提交</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#020617] h-64 overflow-hidden border-t border-slate-800 relative select-text">
+                        <!-- Panel: Cases -->
+                        <div id="panelCase" class="h-full overflow-y-auto p-4 flex flex-col gap-3">
+                            <div class="flex gap-2 items-center" id="caseTabs"></div>
+                            <div class="flex gap-2">
+                                <button onclick="addCase()" class="text-xs px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition">新增用例</button>
+                                <button onclick="deleteCurrentCase()" class="text-xs px-3 py-1.5 rounded border border-slate-700 text-rose-300 hover:bg-rose-900/20 transition">删除用例</button>
+                                <button onclick="resetCases()" class="text-xs px-3 py-1.5 rounded border border-slate-700 text-amber-300 hover:bg-amber-900/20 transition">恢复默认</button>
+                            </div>
+                            <div id="dynamicCaseInputs" class="flex-1 flex flex-col gap-2 text-sm font-mono"></div>
+                        </div>
+
+                        <!-- Panel: Result -->
+                        <div id="panelResult" class="h-full overflow-y-auto p-4 hidden flex flex-col">
+                            <div class="flex items-center justify-between mb-3 shrink-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-slate-600" id="statusDot"></span>
+                                    <span id="judgeTitle" class="text-slate-400 font-bold text-lg">请先运行或提交代码</span>
+                                </div>
+                                <div id="scoreDisplay" class="text-lg font-black font-mono hidden text-emerald-400">+100 PTS</div>
+                            </div>
+                            <div class="flex flex-wrap gap-3 mb-4 text-sm shrink-0" id="metricCards"></div>
+                            <div class="rounded border border-slate-800 bg-slate-900/50 p-3 text-sm text-slate-400 flex-1 overflow-y-auto">
+                                <div id="judgeMessage">等待操作...</div>
+                            </div>
+                        </div>
+
+                        <!-- Panel: Log -->
+                        <div id="panelLog" class="h-full overflow-y-auto p-4 hidden">
+                            <div id="logContent" class="font-mono text-xs text-slate-400 whitespace-pre-wrap leading-6"></div>
+                        </div>
+
+                        <!-- Panel: History -->
+                        <div id="panelHistory" class="h-full overflow-y-auto p-4 hidden">
+                            <div class="flex items-center justify-between mb-3 gap-3">
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-200">当前题目提交记录</div>
+                                    <div class="text-xs text-slate-500">记录按题目单独保存在本地内存。</div>
+                                </div>
+                                <button onclick="clearSubmissionHistory()" class="text-xs px-3 py-1.5 rounded border border-slate-700 text-rose-300 hover:bg-rose-900/20 transition">清空记录</button>
+                            </div>
+                            <div id="historyList" class="space-y-3"></div>
+                        </div>
+                    </div>
+
+                    <div class="px-4 py-3 flex items-center justify-between gap-4 bg-[#111827] border-t border-slate-800">
+                        <div id="statusText" class="text-xs text-slate-400 font-mono">Ready.</div>
+                        <div class="flex items-center gap-3">
+                            <button id="runBtn" onclick="runCode()" class="px-4 py-1.5 bg-slate-700 text-slate-200 rounded hover:bg-slate-600 transition text-sm font-medium">运行测试</button>
+                            <button id="submitBtn" onclick="submitCode()" class="px-5 py-1.5 bg-emerald-600 text-white rounded font-medium hover:bg-emerald-500 transition text-sm flex items-center shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+                                <svg id="loadingIcon" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span id="btnText">正式提交</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- 设置、导入、组卷等模态框（已省略以控制文件大小，但原型中完整保留）-->
