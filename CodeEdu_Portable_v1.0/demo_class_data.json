@@ -1,0 +1,92 @@
+{
+  "classes": [
+    {
+      "id": "class_2024_cs",
+      "name": "计算机科学2024级",
+      "description": "计算机科学专业2024级学生，共45人",
+      "createdAt": "2024-09-01T08:00:00.000Z",
+      "students": [
+        {"id": "202401001", "name": "张三", "score": 95, "ac": 15, "last": "2025-03-25", "submissions": 42},
+        {"id": "202401002", "name": "李四", "score": 88, "ac": 12, "last": "2025-03-24", "submissions": 38},
+        {"id": "202401003", "name": "王五", "score": 92, "ac": 14, "last": "2025-03-26", "submissions": 45},
+        {"id": "202401004", "name": "赵六", "score": 76, "ac": 9, "last": "2025-03-23", "submissions": 28},
+        {"id": "202401005", "name": "钱七", "score": 85, "ac": 11, "last": "2025-03-25", "submissions": 35},
+        {"id": "202401006", "name": "孙八", "score": 91, "ac": 13, "last": "2025-03-26", "submissions": 40},
+        {"id": "202401007", "name": "周九", "score": 68, "ac": 7, "last": "2025-03-22", "submissions": 22},
+        {"id": "202401008", "name": "吴十", "score": 79, "ac": 10, "last": "2025-03-24", "submissions": 30},
+        {"id": "202401009", "name": "郑十一", "score": 94, "ac": 15, "last": "2025-03-26", "submissions": 43},
+        {"id": "202401010", "name": "王十二", "score": 82, "ac": 11, "last": "2025-03-25", "submissions": 33}
+      ]
+    },
+    {
+      "id": "class_2024_se",
+      "name": "软件工程2024级",
+      "description": "软件工程专业2024级学生，共38人",
+      "createdAt": "2024-09-01T08:00:00.000Z",
+      "students": [
+        {"id": "202402001", "name": "陈明", "score": 89, "ac": 13, "last": "2025-03-25", "submissions": 39},
+        {"id": "202402002", "name": "刘芳", "score": 93, "ac": 14, "last": "2025-03-26", "submissions": 44},
+        {"id": "202402003", "name": "张伟", "score": 77, "ac": 9, "last": "2025-03-23", "submissions": 27},
+        {"id": "202402004", "name": "李娜", "score": 84, "ac": 11, "last": "2025-03-24", "submissions": 34},
+        {"id": "202402005", "name": "王强", "score": 96, "ac": 16, "last": "2025-03-26", "submissions": 48},
+        {"id": "202402006", "name": "赵敏", "score": 71, "ac": 8, "last": "2025-03-22", "submissions": 25},
+        {"id": "202402007", "name": "孙丽", "score": 87, "ac": 12, "last": "2025-03-25", "submissions": 37},
+        {"id": "202402008", "name": "周涛", "score": 90, "ac": 13, "last": "2025-03-26", "submissions": 41},
+        {"id": "202402009", "name": "吴静", "score": 81, "ac": 10, "last": "2025-03-24", "submissions": 32},
+        {"id": "202402010", "name": "郑军", "score": 75, "ac": 9, "last": "2025-03-23", "submissions": 26}
+      ]
+    }
+  ],
+  "contests": [
+    {
+      "id": "contest_spring_2025",
+      "title": "2025春季编程竞赛",
+      "status": "已结束",
+      "count": 120,
+      "time": "2025-03-15 14:00-17:00",
+      "desc": "春季学期编程竞赛，包含算法和数据结构题目",
+      "problemKeys": ["1", "20", "15", "33", "42"]
+    },
+    {
+      "id": "contest_midterm_2025",
+      "title": "2025期中考试",
+      "status": "进行中",
+      "count": 85,
+      "time": "剩余 02:15:30",
+      "desc": "数据结构与算法期中考试",
+      "problemKeys": ["2", "5", "8", "12", "18", "25"]
+    }
+  ],
+  "problems": {
+    "15": {
+      "id": "15",
+      "title": "三数之和",
+      "difficulty": "中等",
+      "tags": ["数组", "双指针", "排序"],
+      "desc": "给你一个整数数组 nums ，判断是否存在三元组 [nums[i], nums[j], nums[k]] 满足 i != j、i != k 且 j != k ，同时还满足 nums[i] + nums[j] + nums[k] == 0 。请你返回所有和为 0 且不重复的三元组。",
+      "examples": [
+        {"in": "nums = [-1,0,1,2,-1,-4]", "out": "[[-1,-1,2],[-1,0,1]]"},
+        {"in": "nums = [0,1,1]", "out": "[]"},
+        {"in": "nums = [0,0,0]", "out": "[[0,0,0]]"}
+      ],
+      "constraints": ["3 <= nums.length <= 3000", "-10^5 <= nums[i] <= 10^5"],
+      "inputParams": ["nums"],
+      "defaultCases": [
+        {"nums": "[-1,0,1,2,-1,-4]", "expected": "[[-1,-1,2],[-1,0,1]]"},
+        {"nums": "[0,1,1]", "expected": "[]"},
+        {"nums": "[0,0,0]", "expected": "[[0,0,0]]"}
+      ],
+      "templates": {
+        "python": "class Solution:\n    def threeSum(self, nums: List[int]) -> List[List[int]]:\n        pass",
+        "javascript": "/**\n * @param {number[]} nums\n * @return {number[][]}\n */\nvar threeSum = function(nums) {\n    \n};"
+      },
+      "answers": {
+        "python": "class Solution:\n    def threeSum(self, nums: List[int]) -> List[List[int]]:\n        nums.sort()\n        res = []\n        n = len(nums)\n        for i in range(n-2):\n            if i > 0 and nums[i] == nums[i-1]:\n                continue\n            l, r = i+1, n-1\n            while l < r:\n                s = nums[i] + nums[l] + nums[r]\n                if s < 0:\n                    l += 1\n                elif s > 0:\n                    r -= 1\n                else:\n                    res.append([nums[i], nums[l], nums[r]])\n                    while l < r and nums[l] == nums[l+1]:\n                        l += 1\n                    while l < r and nums[r] == nums[r-1]:\n                        r -= 1\n                    l += 1\n                    r -= 1\n        return res",
+        "javascript": "var threeSum = function(nums) {\n    nums.sort((a,b) => a-b);\n    const res = [];\n    const n = nums.length;\n    for(let i=0; i<n-2; i++) {\n        if(i>0 && nums[i]===nums[i-1]) continue;\n        let l=i+1, r=n-1;\n        while(l<r) {\n            const sum = nums[i]+nums[l]+nums[r];\n            if(sum<0) l++;\n            else if(sum>0) r--;\n            else {\n                res.push([nums[i], nums[l], nums[r]]);\n                while(l<r && nums[l]===nums[l+1]) l++;\n                while(l<r && nums[r]===nums[r-1]) r--;\n                l++; r--;\n            }\n        }\n    }\n    return res;\n};"
+      },
+      "validKeywords": {"python": ["return"], "javascript": ["return"]},
+      "score": 150,
+      "passRate": "32.8%"
+    }
+  }
+}

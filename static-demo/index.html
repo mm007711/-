@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeEdu 教学平台 - Netlify演示版</title>
+    <style>
+        body { font-family: 'Microsoft YaHei', sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: white; border-radius: 15px; padding: 40px; text-align: center; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; margin-bottom: 10px; font-size: 2.5rem; }
+        .subtitle { color: #666; font-size: 1.2rem; margin-bottom: 20px; }
+        .demo-card { background: white; border-radius: 15px; padding: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .demo-card h2 { color: #4facfe; margin-top: 0; border-bottom: 2px solid #4facfe; padding-bottom: 10px; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .feature { background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #4facfe; }
+        .feature h3 { color: #2c3e50; margin-top: 0; }
+        .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+        .btn { padding: 12px 25px; background: #4facfe; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; transition: all 0.3s; text-decoration: none; display: inline-block; }
+        .btn:hover { background: #3a9ce8; transform: translateY(-2px); }
+        .btn-success { background: #42e695; }
+        .btn-warning { background: #ffc107; }
+        .btn-danger { background: #ff6b6b; }
+        .code-box { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Consolas', monospace; margin: 15px 0; overflow-x: auto; }
+        .login-demo { background: #e9f7fe; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .status { padding: 15px; border-radius: 5px; margin: 15px 0; background: #e7f4e4; border-left: 4px solid #28a745; }
+        .status.info { background: #d1ecf1; border-left-color: #17a2b8; }
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            header { padding: 20px; }
+            h1 { font-size: 2rem; }
+            .features { grid-template-columns: 1fr; }
+            .buttons { flex-direction: column; }
+            .btn { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 CodeEdu 教学平台 - Netlify演示版</h1>
+            <div class="subtitle">专为国内网络环境优化的编程教学平台 | 支持离线部署 | 无需编程知识即可使用</div>
+            <div class="buttons" style="justify-content: center;">
+                <a href="#demo" class="btn">🎮 在线演示</a>
+                <a href="#features" class="btn btn-success">✨ 核心功能</a>
+                <a href="#deploy" class="btn btn-warning">🚀 部署指南</a>
+            </div>
+        </header>
+
+        <div class="demo-card">
+            <h2 id="demo">🎮 在线演示</h2>
+            <div class="login-demo">
+                <h3>多角色登录演示</h3>
+                <div class="buttons">
+                    <button class="btn" onclick="demoLogin('student')">👨‍🎓 学生登录 (student1/123456)</button>
+                    <button class="btn btn-warning" onclick="demoLogin('teacher')">👨‍🏫 教师登录 (teacher2/123456)</button>
+                    <button class="btn btn-success" onclick="demoLogin('admin')">👨‍💼 管理员登录 (admin2/123456)</button>
+                </div>
+                <div id="demoResult" class="status" style="display: none;">
+                    <h3>登录结果：</h3>
+                    <div id="demoResultContent"></div>
+                </div>
+            </div>
+
+            <div class="login-demo">
+                <h3>在线编程演示</h3>
+                <div style="margin: 15px 0;">
+                    <label style="font-weight: bold;">选择题目：</label>
+                    <select id="problemSelect" onchange="loadProblem()" style="padding: 8px; border-radius: 5px; margin-left: 10px;">
+                        <option value="1">1. 两数之和 (简单)</option>
+                        <option value="2">2. 斐波那契数列 (简单)</option>
+                        <option value="3">3. 二分查找 (中等)</option>
+                    </select>
+                </div>
+                <textarea id="codeEditor" rows="8" style="width: 100%; font-family: 'Consolas', monospace; padding: 15px; border-radius: 5px; border: 1px solid #ddd; margin: 10px 0;">def two_sum(nums, target):
+    # 在这里编写你的代码
+    pass</textarea>
+                <div class="buttons">
+                    <button class="btn" onclick="runDemoCode()">▶ 运行代码</button>
+                    <button class="btn btn-success" onclick="submitDemoCode()">📤 提交评测</button>
+                </div>
+                <div id="codeResult" class="status" style="display: none;">
+                    <h3>评测结果：</h3>
+                    <div id="codeResultContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-card">
+            <h2 id="features">✨ 核心功能</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>📚 教学管理</h3>
+                    <p>完整的班级管理、作业布置、成绩统计功能，支持多种教学场景。</p>
+                    <ul>
+                        <li>多角色权限系统</li>
+                        <li>作业自动评测</li>
+                        <li>成绩统计分析</li>
+                        <li>学习进度跟踪</li>
+                    </ul>
+                </div>
+                <div class="feature">
+                    <h3>💻 智能评测</h3>
+                    <p>支持多种编程语言，实时代码评测，详细的错误反馈和性能分析。</p>
+                    <ul>
+                        <li>Python/Java/C++支持</li>
+                        <li>实时评测反馈</li>
+                        <li>运行时间统计</li>
+                        <li>内存使用分析</li>
+                    </ul>
+                </div>
+                <div class="feature">
+                    <h3>🌐 国内优化</h3>
+                    <p>专为国内网络环境设计，使用国内镜像源，支持完全离线部署。</p>
+                    <ul>
+                        <li>npm淘宝镜像源</li>
+                        <li>pip清华镜像源</li>
+                        <li>离线部署包</li>
+                        <li>一键安装脚本</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-card">
+            <h2 id="deploy">🚀 部署指南</h2>
+            <div class="status info">
+                <h3>Netlify部署状态：✅ 已配置</h3>
+                <p>本项目已配置Netlify部署，您可以通过以下方式部署：</p>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <h3>1. GitHub部署</h3>
+                    <div class="code-box">
+# 1. 将项目推送到GitHub<br>
+# 2. 登录Netlify<br>
+# 3. 选择"New site from Git"<br>
+# 4. 选择GitHub仓库<br>
+# 5. 自动部署完成
+                    </div>
+                </div>
+                <div class="feature">
+                    <h3>2. 手动部署</h3>
+                    <div class="code-box">
+# 1. 安装Netlify CLI<br>
+npm install -g netlify-cli<br><br>
+# 2. 登录Netlify<br>
+netlify login<br><br>
+# 3. 初始化部署<br>
+netlify init<br><br>
+# 4. 部署网站<br>
+netlify deploy --prod
+                    </div>
+                </div>
+                <div class="feature">
+                    <h3>3. 本地运行</h3>
+                    <div class="code-box">
+# 1. 安装依赖<br>
+cd frontend && npm install<br><br>
+# 2. 启动开发服务器<br>
+npm run dev<br><br>
+# 3. 访问地址<br>
+http://localhost:5173
+                    </div>
+                </div>
+            </div>
+
+            <div class="status">
+                <h3>📁 项目文件结构</h3>
+                <ul>
+                    <li><code>netlify.toml</code> - Netlify部署配置</li>
+                    <li><code>frontend/</code> - Vue.js前端项目</li>
+                    <li><code>backend/</code> - Python Flask后端API</li>
+                    <li><code>启动教学平台_优化版.bat</code> - 一键启动脚本</li>
+                    <li><code>创建离线部署包.bat</code> - 离线部署工具</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="demo-card">
+            <h2>📞 联系与支持</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>项目地址</h3>
+                    <p>GitHub仓库：<code>https://github.com/yourusername/codeedu</code></p>
+                    <p>Netlify演示：<code>https://codeedu-demo.netlify.app</code></p>
+                </div>
+                <div class="feature">
+                    <h3>技术支持</h3>
+                    <p>问题反馈：GitHub Issues</p>
+                    <p>文档地址：项目内文档文件</p>
+                    <p>联系方式：项目维护者邮箱</p>
+                </div>
+                <div class="feature">
+                    <h3>使用许可</h3>
+                    <p>开源协议：MIT License</p>
+                    <p>商业使用：需要授权</p>
+                    <p>教育用途：免费使用</p>
+                </div>
+            </div>
+        </div>
+
+        <footer style="text-align: center; padding: 30px; color: #666; font-size: 0.9rem;">
+            <p>© 2024 CodeEdu 教学平台 - 专为国内网络环境优化的编程教学系统</p>
+            <p>版本：v2.0 | 最后更新：2024年3月29日</p>
+            <div class="buttons" style="justify-content: center; margin-top: 20px;">
+                <button class="btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">⬆ 返回顶部</button>
+                <button class="btn btn-success" onclick="alert('感谢使用CodeEdu教学平台！')">❤️ 感谢支持</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function demoLogin(role) {
+            let username, roleName;
+            switch(role) {
+                case 'student': username = 'student1'; roleName = '学生'; break;
+                case 'teacher': username = 'teacher2'; roleName = '教师'; break;
+                case 'admin': username = 'admin2'; roleName = '管理员'; break;
+            }
+            
+            document.getElementById('demoResult').style.display = 'block';
+            document.getElementById('demoResultContent').innerHTML = `
+                <p>✅ <strong>${roleName}登录成功！</strong></p>
+                <p>用户名：${username}</p>
+                <p>密码：123456</p>
+                <p>权限：${roleName}权限已激活</p>
+                <p>功能：可以访问${roleName}专属功能面板</p>
+            `;
+            
+            // 滚动到结果区域
+            document.getElementById('demoResult').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function loadProblem() {
+            const problemId = document.getElementById('problemSelect').value;
+            const problems = {
+                '1': { code: 'def two_sum(nums, target):\n    # 在这里编写你的代码\n    pass' },
+                '2': { code: 'def fibonacci(n):\n    # 在这里编写你的代码\n    pass' },
+                '3': { code: 'def binary_search(nums, target):\n    # 在这里编写你的代码\n    pass' }
+            };
+            document.getElementById('codeEditor').value = problems[problemId].code;
+        }
+        
+        function runDemoCode() {
+            document.getElementById('codeResult').style.display = 'block';
+            document.getElementById('codeResultContent').innerHTML = `
+                <p>✅ <strong>代码运行成功！</strong></p>
+                <p>运行时间：15.2ms</p>
+                <p>内存使用：9.1MB</p>
+                <p>测试用例：3/3 通过</p>
+                <p>状态：AC (Accepted)</p>
+                <p>输出：[0, 1]</p>
+            `;
+            document.getElementById('codeResult').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function submitDemoCode() {
+            document.getElementById('codeResult').style.display = 'block';
+            document.getElementById('codeResultContent').innerHTML = `
+                <p>📤 <strong>代码提交成功！</strong></p>
+                <p>评测ID：#NETLIFY-${Date.now().toString().slice(-6)}</p>
+                <p>状态：✅ 评测完成</p>
+                <p>得分：100/100</p>
+                <p>排名：第 1 名</p>
+                <p>用时：2.3秒</p>
+            `;
+            document.getElementById('codeResult').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 页面加载时初始化
+        window.onload = function() {
+            // 检查URL中的锚点
+            const hash = window.location.hash;
+            if (hash) {
+                const element = document.querySelector(hash);
+                if (element) {
+                    setTimeout(() => {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                }
+            }
+        };
+    </script>
+</body>
+</html>

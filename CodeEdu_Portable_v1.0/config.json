@@ -1,0 +1,45 @@
+{
+  "app_name": "CodeEdu在线编程教学平台",
+  "version": "1.0.0",
+  "build_date": "2025-03-26",
+  "developer": "计算机学院",
+  "description": "功能完整的在线编程教学平台，支持多班级管理、可视化分析、批量操作、专业报告生成等功能",
+  "features": [
+    "多班级管理系统",
+    "可视化统计图表",
+    "批量操作功能",
+    "专业报告生成",
+    "比赛/测验管理",
+    "在线编程判题",
+    "数据导入导出",
+    "演示模式支持"
+  ],
+  "system_requirements": {
+    "python": ">=3.8",
+    "browser": "Chrome 90+, Firefox 88+, Edge 90+",
+    "os": "Windows 10+, macOS 10.15+, Linux",
+    "memory": "4GB+",
+    "storage": "100MB+"
+  },
+  "demo_data": {
+    "classes": 2,
+    "students": 20,
+    "contests": 2,
+    "problems": 3,
+    "total_score_records": 20,
+    "total_submissions": 400
+  },
+  "export_formats": [
+    "CSV",
+    "JSON",
+    "PDF"
+  ],
+  "supported_languages": [
+    "Python",
+    "JavaScript"
+  ],
+  "contact": {
+    "department": "计算机学院",
+    "purpose": "教学演示与评估"
+  }
+}

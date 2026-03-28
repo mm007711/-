@@ -1,0 +1,71 @@
+{
+  "app_name": "CodeEdu在线编程教学平台 - 完整版",
+  "version": "2.0.0",
+  "build_date": "2025-03-27",
+  "developer": "计算机学院",
+  "description": "功能完整的在线编程教学平台，包含所有用户添加的功能和工具",
+  "features": [
+    "多班级管理系统",
+    "可视化统计图表",
+    "批量操作功能",
+    "专业报告生成",
+    "比赛/测验管理",
+    "在线编程判题",
+    "数据导入导出",
+    "演示模式支持",
+    "系统测试工具",
+    "数据库检查",
+    "用户管理",
+    "题目批量添加",
+    "环境检查工具"
+  ],
+  "tools": [
+    "import_demo_data.py - 演示数据导入",
+    "data_import_tool.py - 批量数据导入",
+    "add_more_problems.py - 题目批量添加",
+    "check_db.py - 数据库检查",
+    "check_demo_env.py - 演示环境检查",
+    "check_users.py - 用户检查",
+    "test_system.py - 系统测试"
+  ],
+  "documents": [
+    "DEMO_GUIDE.md - 演示指南",
+    "DEMO_PREPARATION_SUMMARY.md - 演示准备总结",
+    "CLASS_MANAGEMENT_OPTIMIZATION_SUMMARY.md - 班级管理优化总结",
+    "FUNCTIONALITY_VERIFICATION_REPORT.md - 功能验证报告",
+    "GITHUB_PUSH_GUIDE.md - GitHub推送指南",
+    "INTEGRATION_PLAN.md - 集成计划",
+    "INTEGRATION_SUMMARY.md - 集成总结",
+    "LOGIC_FIXES_SUMMARY.md - 逻辑修复总结",
+    "PROJECT_ROADMAP.md - 项目路线图",
+    "system_summary.md - 系统总结"
+  ],
+  "system_requirements": {
+    "python": ">=3.8",
+    "browser": "Chrome 90+, Firefox 88+, Edge 90+",
+    "os": "Windows 10+, macOS 10.15+, Linux",
+    "memory": "4GB+",
+    "storage": "200MB+"
+  },
+  "demo_data": {
+    "classes": 2,
+    "students": 20,
+    "contests": 2,
+    "problems": 3,
+    "total_score_records": 20,
+    "total_submissions": 400
+  },
+  "export_formats": [
+    "CSV",
+    "JSON",
+    "PDF"
+  ],
+  "supported_languages": [
+    "Python",
+    "JavaScript"
+  ],
+  "contact": {
+    "department": "计算机学院",
+    "purpose": "教学演示与评估"
+  }
+}

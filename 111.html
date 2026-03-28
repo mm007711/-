@@ -3,39 +3,198 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>在线编程教学管理平台 - 测试版</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>CodeEdu - 在线编程教学平台</title>
+    <!-- 使用可靠的Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <!-- 添加自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        accent: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- 备用方案：如果Tailwind加载失败，使用基础CSS -->
     <style>
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        /* 基础CSS回退，确保页面至少有基本样式 */
+        body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .bg-white { background-color: white; }
+        .text-slate-800 { color: #1e293b; }
+        .font-bold { font-weight: bold; }
+        .rounded { border-radius: 0.5rem; }
+        .border { border-width: 1px; }
+        .border-slate-200 { border-color: #e2e8f0; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .h-screen { height: 100vh; }
+        .overflow-hidden { overflow: hidden; }
+        .bg-slate-50 { background-color: #f8fafc; }
+        .text-slate-800 { color: #1e293b; }
+        .font-sans { font-family: system-ui, -apple-system, sans-serif; }
+        .select-none { user-select: none; }
+        
+        /* 优化的自定义样式 */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         .editor-textarea {
             tab-size: 4;
-            font-family: "Fira Code", "Consolas", "Courier New", monospace;
+            font-family: "JetBrains Mono", "Fira Code", "Consolas", "Courier New", monospace;
             white-space: pre;
+            line-height: 1.6;
         }
 
         .resizer {
-            width: 4px;
-            background-color: #1e293b;
+            width: 6px;
+            background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
             cursor: col-resize;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
             z-index: 10;
         }
-        .resizer:hover, .resizer:active { background-color: #3b82f6; }
+        .resizer:hover, .resizer:active { 
+            background: linear-gradient(to bottom, #2563eb, #7c3aed);
+            width: 8px;
+        }
         #lineNumbers::-webkit-scrollbar { display: none; }
-        .modal-mask { backdrop-filter: blur(6px); }
+        .modal-mask { 
+            backdrop-filter: blur(8px);
+            background: rgba(15, 23, 42, 0.7);
+        }
         .view-hidden { display: none !important; }
-        .prose-lite p { margin: 0.5rem 0; }
-        .prose-lite ul { list-style: disc; padding-left: 1.2rem; }
-        .prose-lite ol { list-style: decimal; padding-left: 1.2rem; }
-        .prose-lite code { background: rgba(15,23,42,.06); padding: 0.125rem 0.35rem; border-radius: 0.35rem; }
-        .prose-lite pre { background: rgba(15,23,42,.04); padding: 0.75rem; border-radius: 0.75rem; overflow: auto; }
+        .prose-lite p { margin: 0.75rem 0; line-height: 1.7; }
+        .prose-lite ul { list-style: disc; padding-left: 1.5rem; margin: 0.75rem 0; }
+        .prose-lite ol { list-style: decimal; padding-left: 1.5rem; margin: 0.75rem 0; }
+        .prose-lite code { 
+            background: rgba(59, 130, 246, 0.1); 
+            padding: 0.2rem 0.5rem; 
+            border-radius: 0.375rem;
+            color: #3b82f6;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.9em;
+        }
+        .prose-lite pre { 
+            background: rgba(15, 23, 42, 0.05); 
+            padding: 1rem; 
+            border-radius: 0.75rem; 
+            overflow: auto;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+        }
+        
+        /* 新增的优化样式 */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .shadow-soft {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .shadow-medium {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .shadow-hard {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .border-gradient {
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
+        }
     </style>
-</head>
-<body class="h-screen overflow-hidden bg-slate-50 text-slate-800 flex flex-col font-sans select-none">
+    <!-- 加载Inter字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 加载JetBrains Mono字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@
 
     <!-- ========================================================= -->
     <!-- 视图 1：全局平台大厅 -->
@@ -62,6 +221,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                     </svg>
                     使用文档
+                </button>
+
+                <!-- 演示模式按钮 -->
+                <button onclick="demoMode.enterDemoMode()" class="text-purple-600 hover:text-purple-800 font-medium transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    演示模式
                 </button>
 
                 <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-lg border border-slate-200">
@@ -169,53 +336,137 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-2xl font-bold text-slate-800">班级成绩管理</h2>
-                            <p class="text-sm text-slate-500 mt-1">支持导入学生名单与导出 CSV 成绩单。</p>
+                            <p class="text-sm text-slate-500 mt-1">支持多班级管理、学生成绩分析与可视化统计。</p>
                         </div>
-                        <div class="flex gap-3">
-                            <button onclick="openImportModal('student')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition flex items-center gap-2">
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="openClassManagerModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
-                                导入学生名单
+                                班级管理
+                            </button>
+                            <button onclick="openImportModal('student')" class="px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                导入学生
                             </button>
                             <button onclick="exportClassGradesCSV()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 shadow-sm transition flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
-                                导出成绩单 (CSV)
+                                导出成绩单
+                            </button>
+                            <button onclick="generateClassReport()" class="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                生成报告
                             </button>
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 班级选择器 -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <div class="text-sm font-medium text-slate-700 mb-1">当前班级</div>
+                                <select id="classSelector" onchange="switchClass(this.value)" class="bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 text-slate-800 font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                                    <option value="default">默认班级</option>
+                                </select>
+                            </div>
+                            <div class="text-sm text-slate-600">
+                                <span class="font-medium" id="currentClassInfo">0 名学生</span>
+                                <span class="mx-2">•</span>
+                                <span id="currentClassStats">平均分: 0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 统计卡片 -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
                             <div class="text-sm text-slate-500 mb-1">班级总人数</div>
                             <div class="text-2xl font-bold text-slate-800" id="stat-total-students">0 人</div>
+                            <div class="text-xs text-slate-400 mt-2">较上周 <span class="text-emerald-600">+0%</span></div>
                         </div>
                         <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
                             <div class="text-sm text-slate-500 mb-1">平均完成题数</div>
                             <div class="text-2xl font-bold text-slate-800" id="stat-avg-ac">0.0 题</div>
+                            <div class="text-xs text-slate-400 mt-2">班级排名: <span class="text-amber-600">-</span></div>
                         </div>
                         <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
                             <div class="text-sm text-slate-500 mb-1">活跃率 (有提交)</div>
                             <div class="text-2xl font-bold text-emerald-600" id="stat-active">0%</div>
+                            <div class="text-xs text-slate-400 mt-2">参与度: <span class="text-emerald-600">低</span></div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">平均分</div>
+                            <div class="text-2xl font-bold text-indigo-600" id="stat-avg-score">0</div>
+                            <div class="text-xs text-slate-400 mt-2">最高分: <span class="text-rose-600">0</span></div>
                         </div>
                     </div>
 
+                    <!-- 可视化图表区域 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-lg font-semibold text-slate-800">成绩分布</div>
+                                <button onclick="refreshScoreChart()" class="text-xs text-slate-500 hover:text-slate-700">刷新</button>
+                            </div>
+                            <div class="h-64 flex items-center justify-center" id="scoreDistributionChart">
+                                <div class="text-slate-400 text-sm">加载成绩分布图表...</div>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-lg font-semibold text-slate-800">活跃度趋势</div>
+                                <button onclick="refreshActivityChart()" class="text-xs text-slate-500 hover:text-slate-700">刷新</button>
+                            </div>
+                            <div class="h-64 flex items-center justify-center" id="activityTrendChart">
+                                <div class="text-slate-400 text-sm">加载活跃度趋势图表...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 学生列表 -->
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <div class="text-lg font-semibold text-slate-800">学生列表</div>
+                                <div class="text-sm text-slate-500 mt-1">支持点击查看详情、批量操作</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="selectAllStudents()" class="px-3 py-1.5 text-sm border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition">全选</button>
+                                <button onclick="clearStudentSelection()" class="px-3 py-1.5 text-sm border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition">取消选择</button>
+                                <button onclick="batchRemoveStudents()" class="px-3 py-1.5 text-sm border border-rose-300 text-rose-700 rounded hover:bg-rose-50 transition">批量移除</button>
+                            </div>
+                        </div>
                         <table class="w-full text-left text-sm">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
                                 <tr>
+                                    <th class="px-6 py-4 font-medium w-10">
+                                        <input type="checkbox" id="selectAllStudents" onchange="toggleAllStudents(this.checked)">
+                                    </th>
                                     <th class="px-6 py-4 font-medium">学号</th>
                                     <th class="px-6 py-4 font-medium">姓名</th>
                                     <th class="px-6 py-4 font-medium">总分</th>
                                     <th class="px-6 py-4 font-medium">AC 题数</th>
+                                    <th class="px-6 py-4 font-medium">提交次数</th>
                                     <th class="px-6 py-4 font-medium">最近提交</th>
                                     <th class="px-6 py-4 font-medium text-right">操作</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100" id="classStudentList"></tbody>
                         </table>
+                        <div class="px-6 py-4 border-t border-slate-200 text-sm text-slate-500 flex items-center justify-between">
+                            <div id="selectedCount">已选择 0 名学生</div>
+                            <div class="flex items-center gap-4">
+                                <button onclick="previousStudentPage()" class="text-slate-600 hover:text-slate-800 disabled:text-slate-300 disabled:cursor-not-allowed" id="prevPageBtn" disabled>上一页</button>
+                                <span id="studentPageInfo">第 1 页，共 1 页</span>
+                                <button onclick="nextStudentPage()" class="text-slate-600 hover:text-slate-800 disabled:text-slate-300 disabled:cursor-not-allowed" id="nextPageBtn" disabled>下一页</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -448,27 +699,129 @@
     <!-- 通用导入 -->
     <div id="importModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-950/80 modal-mask" onclick="closeImportModal()"></div>
-        <div class="relative w-full max-w-3xl rounded-2xl border border-slate-700 bg-[#0f172a] shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
+        <div class="relative w-full max-w-4xl rounded-2xl border border-slate-700 bg-[#0f172a] shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
             <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between shrink-0">
-                <div class="text-white font-semibold" id="importModalTitle">⚡ 导入数据 (JSON)</div>
+                <div class="text-white font-semibold" id="importModalTitle">⚡ 导入数据</div>
                 <button onclick="closeImportModal()" class="text-slate-400 hover:text-white">✕</button>
             </div>
-            <div class="p-5 flex-1 overflow-y-auto flex flex-col gap-4">
-                <div id="importModalHint" class="text-sm text-amber-400 bg-amber-950/30 p-3 rounded border border-amber-900/50">
-                    💡 请按照标准 JSON 格式编写。上传后将解析并保存在本地环境中。
-                </div>
-
-                <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
-                    <div class="text-sm text-slate-300 mb-2">读取本地 JSON 文件</div>
-                    <input id="importJsonFileInput" type="file" accept=".json,application/json" class="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white hover:file:bg-sky-500">
-                    <div class="text-xs text-slate-500 mt-2">选择文件后会自动读取到下方文本框。</div>
-                </div>
-
-                <textarea id="importJsonInput" class="w-full flex-1 min-h-[320px] bg-[#1e293b] text-emerald-300 font-mono text-sm p-4 rounded border border-slate-700 outline-none focus:border-sky-500 resize-none" spellcheck="false"></textarea>
+            
+            <!-- 导入方式选项卡 -->
+            <div class="px-5 py-3 border-b border-slate-800 flex gap-2 bg-slate-900/50">
+                <button onclick="switchImportTab('json')" id="importTabJson" class="px-4 py-2 text-sm rounded-lg bg-slate-800 text-slate-200 border border-slate-700 transition">JSON 导入</button>
+                <button onclick="switchImportTab('excel')" id="importTabExcel" class="px-4 py-2 text-sm rounded-lg text-slate-400 hover:text-slate-200 border border-transparent hover:border-slate-700 transition">Excel/CSV 导入</button>
+                <button onclick="switchImportTab('manual')" id="importTabManual" class="px-4 py-2 text-sm rounded-lg text-slate-400 hover:text-slate-200 border border-transparent hover:border-slate-700 transition">手动添加</button>
             </div>
+            
+            <div class="p-5 flex-1 overflow-y-auto flex flex-col gap-4">
+                <!-- JSON 导入面板 -->
+                <div id="importPanelJson" class="space-y-4">
+                    <div id="importModalHint" class="text-sm text-amber-400 bg-amber-950/30 p-3 rounded border border-amber-900/50">
+                        💡 请按照标准 JSON 格式编写。上传后将解析并保存在本地环境中。
+                    </div>
+
+                    <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                        <div class="text-sm text-slate-300 mb-2">读取本地 JSON 文件</div>
+                        <input id="importJsonFileInput" type="file" accept=".json,application/json" class="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white hover:file:bg-sky-500">
+                        <div class="text-xs text-slate-500 mt-2">选择文件后会自动读取到下方文本框。</div>
+                    </div>
+
+                    <textarea id="importJsonInput" class="w-full flex-1 min-h-[320px] bg-[#1e293b] text-emerald-300 font-mono text-sm p-4 rounded border border-slate-700 outline-none focus:border-sky-500 resize-none" spellcheck="false"></textarea>
+                </div>
+                
+                <!-- Excel/CSV 导入面板 -->
+                <div id="importPanelExcel" class="space-y-4 hidden">
+                    <div class="text-sm text-emerald-400 bg-emerald-950/30 p-3 rounded border border-emerald-900/50">
+                        💡 支持 Excel (.xlsx, .xls) 和 CSV 文件导入。请确保文件格式符合要求。
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                            <div class="text-sm text-slate-300 mb-2">导入用户数据</div>
+                            <input id="importUserFileInput" type="file" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-500">
+                            <div class="text-xs text-slate-500 mt-2">支持 CSV/Excel 格式的用户数据</div>
+                            <button onclick="handleExcelImport('user')" class="mt-3 w-full px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-500 transition text-sm font-medium">导入用户</button>
+                        </div>
+                        
+                        <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                            <div class="text-sm text-slate-300 mb-2">导入题目数据</div>
+                            <input id="importProblemFileInput" type="file" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white hover:file:bg-emerald-500">
+                            <div class="text-xs text-slate-500 mt-2">支持 CSV/Excel 格式的题目数据</div>
+                            <button onclick="handleExcelImport('problem')" class="mt-3 w-full px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500 transition text-sm font-medium">导入题目</button>
+                        </div>
+                    </div>
+                    
+                    <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                        <div class="text-sm text-slate-300 mb-2">导入班级数据</div>
+                        <input id="importClassFileInput" type="file" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-amber-600 file:text-white hover:file:bg-amber-500">
+                        <div class="text-xs text-slate-500 mt-2">支持 CSV/Excel 格式的班级数据</div>
+                        <button onclick="handleExcelImport('class')" class="mt-3 w-full px-4 py-2 rounded bg-amber-600 text-white hover:bg-amber-500 transition text-sm font-medium">导入班级</button>
+                    </div>
+                    
+                    <div class="text-xs text-slate-500 p-3 bg-slate-900/40 rounded border border-slate-800">
+                        <div class="font-medium text-slate-300 mb-1">文件格式要求：</div>
+                        <div class="space-y-1">
+                            <div>• 用户文件：包含 username, password, name, role, email 列</div>
+                            <div>• 题目文件：包含 title, description, difficulty, score, tags 列</div>
+                            <div>• 班级文件：包含 name, description, teacher_id 列</div>
+                            <div>• 支持 UTF-8 编码，第一行为表头</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 手动添加面板 -->
+                <div id="importPanelManual" class="space-y-4 hidden">
+                    <div class="text-sm text-sky-400 bg-sky-950/30 p-3 rounded border border-sky-900/50">
+                        💡 手动添加单个数据项，适用于少量数据录入。
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                            <div class="text-sm text-slate-300 mb-3">手动添加用户</div>
+                            <div class="space-y-3">
+                                <input id="manualUsername" type="text" placeholder="用户名" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500">
+                                <input id="manualPassword" type="text" placeholder="密码 (默认: 123456)" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500">
+                                <input id="manualName" type="text" placeholder="姓名" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500">
+                                <select id="manualRole" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500">
+                                    <option value="student">学生</option>
+                                    <option value="teacher">教师</option>
+                                </select>
+                                <input id="manualEmail" type="text" placeholder="邮箱 (可选)" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500">
+                            </div>
+                            <button onclick="handleManualAdd('user')" class="mt-4 w-full px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-500 transition text-sm font-medium">添加用户</button>
+                        </div>
+                        
+                        <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                            <div class="text-sm text-slate-300 mb-3">手动添加题目</div>
+                            <div class="space-y-3">
+                                <input id="manualTitle" type="text" placeholder="题目标题" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
+                                <textarea id="manualDescription" placeholder="题目描述" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500 resize-none"></textarea>
+                                <select id="manualDifficulty" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
+                                    <option value="简单">简单</option>
+                                    <option value="中等">中等</option>
+                                    <option value="困难">困难</option>
+                                </select>
+                                <input id="manualScore" type="number" placeholder="分值 (默认: 10)" value="10" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
+                                <input id="manualTags" type="text" placeholder="标签 (逗号分隔)" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
+                            </div>
+                            <button onclick="handleManualAdd('problem')" class="mt-4 w-full px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500 transition text-sm font-medium">添加题目</button>
+                        </div>
+                        
+                        <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                            <div class="text-sm text-slate-300 mb-3">手动添加班级</div>
+                            <div class="space-y-3">
+                                <input id="manualClassName" type="text" placeholder="班级名称" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-amber-500">
+                                <textarea id="manualClassDesc" placeholder="班级描述" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-amber-500 resize-none"></textarea>
+                                <input id="manualTeacherId" type="number" placeholder="教师ID (默认: 2)" value="2" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 outline-none focus:border-amber-500">
+                            </div>
+                            <button onclick="handleManualAdd('class')" class="mt-4 w-full px-4 py-2 rounded bg-amber-600 text-white hover:bg-amber-500 transition text-sm font-medium">添加班级</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="px-5 py-4 border-t border-slate-800 flex justify-end gap-3 shrink-0 bg-slate-900">
                 <button onclick="closeImportModal()" class="px-4 py-2 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition text-sm">取消</button>
-                <button id="importSubmitBtn" onclick="handleImportSubmit()" class="px-4 py-2 rounded bg-sky-600 text-white hover:bg-sky-500 transition text-sm font-medium">保存并导入</button>
+                <button id="importSubmitBtn" onclick="handleImportSubmit()" class="px-4 py-2 rounded bg-sky-600 text-white hover:bg-sky-500 transition text-sm font-medium hidden">保存并导入</button>
             </div>
         </div>
     </div>
@@ -595,6 +948,35 @@
                 <button onclick="closeSettingsModal()" class="px-4 py-2 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition text-sm">取消</button>
                 <button onclick="saveSystemSettings()" class="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-500 transition text-sm font-medium">保存设置</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 班级管理模态框 -->
+    <div id="classManagerModal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/80 modal-mask" onclick="closeClassManagerModal()"></div>
+        <div class="relative w-full max-w-2xl rounded-2xl border border-slate-700 bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div class="text-slate-800 font-semibold">班级管理</div>
+                <button onclick="closeClassManagerModal()" class="text-slate-400 hover:text-slate-800">✕</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6" id="classManagerContent">
+                <!-- 内容由JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 班级报告模态框 -->
+    <div id="classReportModal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/60 modal-mask" onclick="closeClassReportModal()"></div>
+        <div class="relative w-full max-w-4xl h-[80vh] rounded-2xl border border-slate-700 bg-white shadow-2xl overflow-hidden flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div class="text-slate-800 font-semibold">班级成绩分析报告</div>
+                <div class="flex gap-2">
+                    <button onclick="printClassReport()" class="px-3 py-1.5 text-sm border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition">打印</button>
+                    <button onclick="closeClassReportModal()" class="text-slate-400 hover:text-slate-800">✕</button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6" id="classReportContent"></div>
         </div>
     </div>
 
@@ -890,6 +1272,36 @@
 
         function openContestBuilderModal() {
             openContestBuilder();
+        }
+        
+        function openContestBuilder(contestId = null) {
+            contestBuilderEditingId = contestId || null;
+            contestBuilderSelected.clear();
+            
+            if (contestId) {
+                const contest = CONTEST_DATA.find(c => c.id === contestId);
+                if (contest) {
+                    document.getElementById('contestTitleInput').value = contest.title || '';
+                    document.getElementById('contestStatusInput').value = contest.status || '未开始';
+                    document.getElementById('contestCountInput').value = contest.count || 50;
+                    document.getElementById('contestTimeInput').value = contest.time || '';
+                    document.getElementById('contestDescInput').value = contest.desc || '';
+                    
+                    if (Array.isArray(contest.problemKeys)) {
+                        contest.problemKeys.forEach(k => contestBuilderSelected.add(k));
+                    }
+                }
+            } else {
+                document.getElementById('contestTitleInput').value = '';
+                document.getElementById('contestStatusInput').value = '未开始';
+                document.getElementById('contestCountInput').value = 50;
+                document.getElementById('contestTimeInput').value = '';
+                document.getElementById('contestDescInput').value = '';
+            }
+            
+            updateSelectedProblemSummary();
+            renderContestBuilderProblemList();
+            showModal('contestBuilderModal');
         }
 
         // ==========================================
@@ -2192,42 +2604,568 @@
         }
 
         // ==========================================
-        // 比赛 / 测验 组卷管理逻辑
+        // 班级管理优化功能
         // ==========================================
-        function openContestBuilder(contestId = null) {
-            contestBuilderEditingId = contestId;
-            contestBuilderSelected.clear();
-            
-            // 清理之前的残留数据
-            document.getElementById('contestTitleInput').value = '';
-            document.getElementById('contestStatusInput').value = '未开始';
-            document.getElementById('contestCountInput').value = '50';
-            document.getElementById('contestTimeInput').value = '';
-            document.getElementById('contestDescInput').value = '';
-            document.getElementById('contestExtraJsonInput').value = '';
-            document.getElementById('contestProblemSearchInput').value = '';
-            const fileInput = document.getElementById('contestJsonFileInput');
-            if(fileInput) fileInput.value = '';
-
-            // 如果是编辑模式，装载数据
-            if (contestId) {
-                const contest = CONTEST_DATA.find(c => c.id === contestId);
-                if (contest) {
-                    document.getElementById('contestBuilderTitle').innerText = '✏️ 编辑比赛 / 测验';
-                    document.getElementById('contestTitleInput').value = contest.title || '';
-                    document.getElementById('contestStatusInput').value = contest.status || '未开始';
-                    document.getElementById('contestCountInput').value = contest.count || '50';
-                    document.getElementById('contestTimeInput').value = contest.time || '';
-                    document.getElementById('contestDescInput').value = contest.desc || '';
-                    (contest.problemKeys ||[]).forEach(k => contestBuilderSelected.add(k));
-                }
-            } else {
-                document.getElementById('contestBuilderTitle').innerText = '🧪 发布比赛 / 测验';
+        
+        // 多班级管理
+        let CLASSES_DATA = safeJSONParse(localStorage.getItem('oj_classes_data'), {
+            'default': {
+                id: 'default',
+                name: '默认班级',
+                description: '系统默认班级',
+                students: CLASS_STUDENTS,
+                createdAt: new Date().toISOString()
             }
+        });
+        
+        let currentClassId = 'default';
+        let selectedStudents = new Set();
+        let studentPage = 1;
+        const studentsPerPage = 10;
 
-            updateSelectedProblemSummary();
-            renderContestBuilderProblemList();
-            showModal('contestBuilderModal');
+        // 班级管理模态框
+        function openClassManagerModal() {
+            renderClassManagerModal();
+            showModal('classManagerModal');
+        }
+
+        function closeClassManagerModal() {
+            hideModal('classManagerModal');
+        }
+
+        function renderClassManagerModal() {
+            const container = document.getElementById('classManagerContent');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-slate-800">班级管理</h3>
+                        <button onclick="createNewClass()" class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">新建班级</button>
+                    </div>
+                    
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                        <div class="text-sm font-medium text-slate-700 mb-2">班级列表</div>
+                        <div class="space-y-2 max-h-60 overflow-y-auto" id="classListContainer"></div>
+                    </div>
+                    
+                    <div id="classEditForm" class="hidden space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">班级名称</label>
+                            <input type="text" id="classNameInput" class="w-full border border-slate-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">班级描述</label>
+                            <textarea id="classDescInput" rows="3" class="w-full border border-slate-300 rounded px-3 py-2 text-sm"></textarea>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="saveClass()" class="px-3 py-1.5 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 transition">保存</button>
+                            <button onclick="cancelEditClass()" class="px-3 py-1.5 bg-slate-300 text-slate-700 text-sm rounded hover:bg-slate-400 transition">取消</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            renderClassList();
+        }
+
+        function renderClassList() {
+            const container = document.getElementById('classListContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            Object.values(CLASSES_DATA).forEach(cls => {
+                const isCurrent = cls.id === currentClassId;
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between p-3 rounded border ${isCurrent ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white'}`;
+                div.innerHTML = `
+                    <div class="min-w-0">
+                        <div class="font-medium text-slate-800 truncate">${escapeHtml(cls.name)}</div>
+                        <div class="text-xs text-slate-500 mt-1">${cls.students?.length || 0} 名学生</div>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        ${!isCurrent ? `<button onclick="switchClass('${cls.id}')" class="px-2 py-1 text-xs text-slate-600 hover:text-slate-800">切换</button>` : ''}
+                        <button onclick="editClass('${cls.id}')" class="px-2 py-1 text-xs text-slate-600 hover:text-slate-800">编辑</button>
+                        ${cls.id !== 'default' ? `<button onclick="deleteClass('${cls.id}')" class="px-2 py-1 text-xs text-rose-600 hover:text-rose-800">删除</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function createNewClass() {
+            document.getElementById('classEditForm').classList.remove('hidden');
+            document.getElementById('classNameInput').value = '';
+            document.getElementById('classDescInput').value = '';
+            document.getElementById('classEditForm').dataset.editId = 'new';
+        }
+
+        function editClass(classId) {
+            const cls = CLASSES_DATA[classId];
+            if (!cls) return;
+            
+            document.getElementById('classEditForm').classList.remove('hidden');
+            document.getElementById('classNameInput').value = cls.name || '';
+            document.getElementById('classDescInput').value = cls.description || '';
+            document.getElementById('classEditForm').dataset.editId = classId;
+        }
+
+        function cancelEditClass() {
+            document.getElementById('classEditForm').classList.add('hidden');
+        }
+
+        function saveClass() {
+            const editId = document.getElementById('classEditForm').dataset.editId;
+            const name = document.getElementById('classNameInput').value.trim();
+            const desc = document.getElementById('classDescInput').value.trim();
+            
+            if (!name) {
+                alert('请输入班级名称');
+                return;
+            }
+            
+            if (editId === 'new') {
+                const newId = 'class_' + Date.now();
+                CLASSES_DATA[newId] = {
+                    id: newId,
+                    name,
+                    description: desc,
+                    students: [],
+                    createdAt: new Date().toISOString()
+                };
+            } else {
+                if (CLASSES_DATA[editId]) {
+                    CLASSES_DATA[editId].name = name;
+                    CLASSES_DATA[editId].description = desc;
+                }
+            }
+            
+            localStorage.setItem('oj_classes_data', JSON.stringify(CLASSES_DATA));
+            renderClassList();
+            cancelEditClass();
+            updateClassSelector();
+        }
+
+        function deleteClass(classId) {
+            if (!confirm('确定要删除这个班级吗？此操作不可恢复。')) return;
+            
+            if (currentClassId === classId) {
+                currentClassId = 'default';
+                switchClass('default');
+            }
+            
+            delete CLASSES_DATA[classId];
+            localStorage.setItem('oj_classes_data', JSON.stringify(CLASSES_DATA));
+            renderClassList();
+            updateClassSelector();
+        }
+
+        function updateClassSelector() {
+            const selector = document.getElementById('classSelector');
+            if (!selector) return;
+            
+            selector.innerHTML = Object.values(CLASSES_DATA).map(cls => 
+                `<option value="${cls.id}" ${cls.id === currentClassId ? 'selected' : ''}>${escapeHtml(cls.name)}</option>`
+            ).join('');
+        }
+
+        function switchClass(classId) {
+            currentClassId = classId;
+            const cls = CLASSES_DATA[classId];
+            if (cls) {
+                CLASS_STUDENTS = cls.students || [];
+                localStorage.setItem('oj_class_students', JSON.stringify(CLASS_STUDENTS));
+            }
+            
+            updateClassSelector();
+            renderClassStudentList();
+            updateClassStats();
+            closeClassManagerModal();
+        }
+
+        // 学生批量操作
+        function toggleAllStudents(checked) {
+            const currentStudents = getCurrentPageStudents();
+            if (checked) {
+                currentStudents.forEach(s => selectedStudents.add(s.id));
+            } else {
+                selectedStudents.clear();
+            }
+            updateStudentSelectionUI();
+        }
+
+        function selectAllStudents() {
+            const currentStudents = getCurrentPageStudents();
+            currentStudents.forEach(s => selectedStudents.add(s.id));
+            updateStudentSelectionUI();
+        }
+
+        function clearStudentSelection() {
+            selectedStudents.clear();
+            updateStudentSelectionUI();
+        }
+
+        function batchRemoveStudents() {
+            if (selectedStudents.size === 0) {
+                alert('请先选择要移除的学生');
+                return;
+            }
+            
+            if (!confirm(`确定要移除选中的 ${selectedStudents.size} 名学生吗？`)) return;
+            
+            CLASS_STUDENTS = CLASS_STUDENTS.filter(s => !selectedStudents.has(s.id));
+            
+            // 更新当前班级数据
+            if (CLASSES_DATA[currentClassId]) {
+                CLASSES_DATA[currentClassId].students = CLASS_STUDENTS;
+                localStorage.setItem('oj_classes_data', JSON.stringify(CLASSES_DATA));
+            }
+            
+            localStorage.setItem('oj_class_students', JSON.stringify(CLASS_STUDENTS));
+            selectedStudents.clear();
+            renderClassStudentList();
+            updateClassStats();
+        }
+
+        function getCurrentPageStudents() {
+            const start = (studentPage - 1) * studentsPerPage;
+            const end = start + studentsPerPage;
+            return CLASS_STUDENTS.slice(start, end);
+        }
+
+        function updateStudentSelectionUI() {
+            // 更新全选复选框
+            const selectAllCheckbox = document.getElementById('selectAllStudents');
+            if (selectAllCheckbox) {
+                const currentStudents = getCurrentPageStudents();
+                selectAllCheckbox.checked = currentStudents.length > 0 && 
+                    currentStudents.every(s => selectedStudents.has(s.id));
+                selectAllCheckbox.indeterminate = currentStudents.some(s => selectedStudents.has(s.id)) && 
+                    !currentStudents.every(s => selectedStudents.has(s.id));
+            }
+            
+            // 更新选中计数
+            const selectedCount = document.getElementById('selectedCount');
+            if (selectedCount) {
+                selectedCount.textContent = `已选择 ${selectedStudents.size} 名学生`;
+            }
+        }
+
+        function previousStudentPage() {
+            if (studentPage > 1) {
+                studentPage--;
+                renderClassStudentList();
+            }
+        }
+
+        function nextStudentPage() {
+            const totalPages = Math.ceil(CLASS_STUDENTS.length / studentsPerPage);
+            if (studentPage < totalPages) {
+                studentPage++;
+                renderClassStudentList();
+            }
+        }
+
+        function updateClassStats() {
+            const cls = CLASSES_DATA[currentClassId];
+            if (!cls) return;
+            
+            const students = cls.students || [];
+            const total = students.length;
+            const totalAc = students.reduce((sum, s) => sum + (Number(s.ac) || 0), 0);
+            const avgAc = total === 0 ? 0 : (totalAc / total).toFixed(1);
+            const activeCount = students.filter(s => (Number(s.ac) || 0) > 0).length;
+            const activeRate = total === 0 ? 0 : Math.round((activeCount / total) * 100);
+            const avgScore = total === 0 ? 0 : Math.round(students.reduce((sum, s) => sum + (Number(s.score) || 0), 0) / total);
+            const maxScore = total === 0 ? 0 : Math.max(...students.map(s => Number(s.score) || 0));
+            
+            document.getElementById('stat-total-students').textContent = `${total} 人`;
+            document.getElementById('stat-avg-ac').textContent = `${avgAc} 题`;
+            document.getElementById('stat-active').textContent = `${activeRate}%`;
+            document.getElementById('stat-avg-score').textContent = avgScore;
+            
+            document.getElementById('currentClassInfo').textContent = `${total} 名学生`;
+            document.getElementById('currentClassStats').textContent = `平均分: ${avgScore}`;
+            
+            // 更新分页信息
+            const totalPages = Math.ceil(total / studentsPerPage);
+            document.getElementById('studentPageInfo').textContent = `第 ${studentPage} 页，共 ${totalPages} 页`;
+            document.getElementById('prevPageBtn').disabled = studentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = studentPage >= totalPages;
+            
+            // 更新图表
+            updateScoreChart();
+            updateActivityChart();
+        }
+
+        // 图表功能
+        function updateScoreChart() {
+            const container = document.getElementById('scoreDistributionChart');
+            if (!container) return;
+            
+            const students = CLASSES_DATA[currentClassId]?.students || [];
+            if (students.length === 0) {
+                container.innerHTML = '<div class="text-slate-400 text-sm">暂无成绩数据</div>';
+                return;
+            }
+            
+            // 简单模拟成绩分布
+            const scores = students.map(s => Number(s.score) || 0);
+            const scoreRanges = [
+                { range: '0-59', count: 0 },
+                { range: '60-69', count: 0 },
+                { range: '70-79', count: 0 },
+                { range: '80-89', count: 0 },
+                { range: '90-100', count: 0 }
+            ];
+            
+            scores.forEach(score => {
+                if (score < 60) scoreRanges[0].count++;
+                else if (score < 70) scoreRanges[1].count++;
+                else if (score < 80) scoreRanges[2].count++;
+                else if (score < 90) scoreRanges[3].count++;
+                else scoreRanges[4].count++;
+            });
+            
+            const maxCount = Math.max(...scoreRanges.map(r => r.count));
+            const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
+            
+            container.innerHTML = `
+                <div class="w-full h-full flex items-end justify-center gap-2">
+                    ${scoreRanges.map((r, i) => `
+                        <div class="flex flex-col items-center" style="height: 100%">
+                            <div class="text-xs text-slate-500 mb-1">${r.range}</div>
+                            <div class="w-8 rounded-t-lg transition-all duration-500" 
+                                 style="height: ${r.count === 0 ? '5px' : (r.count / maxCount * 90 + 10) + '%'}; 
+                                        background-color: ${colors[i]}"></div>
+                            <div class="text-xs font-medium mt-1">${r.count}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function updateActivityChart() {
+            const container = document.getElementById('activityTrendChart');
+            if (!container) return;
+            
+            const students = CLASSES_DATA[currentClassId]?.students || [];
+            if (students.length === 0) {
+                container.innerHTML = '<div class="text-slate-400 text-sm">暂无活跃度数据</div>';
+                return;
+            }
+            
+            // 模拟最近7天活跃度
+            const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            const activities = days.map(() => Math.floor(Math.random() * students.length * 0.7));
+            const maxActivity = Math.max(...activities);
+            
+            container.innerHTML = `
+                <div class="w-full h-full flex items-end justify-between px-4">
+                    ${days.map((day, i) => `
+                        <div class="flex flex-col items-center" style="height: 100%">
+                            <div class="text-xs text-slate-500 mb-1">${day}</div>
+                            <div class="w-6 rounded-t-lg bg-gradient-to-t from-indigo-500 to-indigo-300 transition-all duration-500" 
+                                 style="height: ${activities[i] === 0 ? '5px' : (activities[i] / maxActivity * 90 + 10) + '%'}"></div>
+                            <div class="text-xs font-medium mt-1">${activities[i]}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function refreshScoreChart() {
+            updateScoreChart();
+        }
+
+        function refreshActivityChart() {
+            updateActivityChart();
+        }
+
+        // 生成班级报告
+        function generateClassReport() {
+            const cls = CLASSES_DATA[currentClassId];
+            if (!cls || !cls.students || cls.students.length === 0) {
+                alert('当前班级没有学生数据，无法生成报告');
+                return;
+            }
+            
+            const students = cls.students;
+            const total = students.length;
+            const totalAc = students.reduce((sum, s) => sum + (Number(s.ac) || 0), 0);
+            const avgAc = (totalAc / total).toFixed(1);
+            const avgScore = Math.round(students.reduce((sum, s) => sum + (Number(s.score) || 0), 0) / total);
+            const maxScore = Math.max(...students.map(s => Number(s.score) || 0));
+            const minScore = Math.min(...students.map(s => Number(s.score) || 0));
+            const activeCount = students.filter(s => (Number(s.ac) || 0) > 0).length;
+            const activeRate = Math.round((activeCount / total) * 100);
+            
+            // 生成报告HTML
+            const reportHTML = `
+                <div class="space-y-4">
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-slate-800">${escapeHtml(cls.name)} 班级报告</h3>
+                        <p class="text-sm text-slate-500">生成时间: ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-500">班级人数</div>
+                            <div class="text-2xl font-bold text-slate-800">${total} 人</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-500">平均分</div>
+                            <div class="text-2xl font-bold text-indigo-600">${avgScore}</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-500">最高分</div>
+                            <div class="text-2xl font-bold text-emerald-600">${maxScore}</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-500">活跃率</div>
+                            <div class="text-2xl font-bold text-amber-600">${activeRate}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-slate-800 mb-3">成绩分布</h4>
+                        <div class="space-y-2">
+                            ${['0-59', '60-69', '70-79', '80-89', '90-100'].map(range => {
+                                const count = students.filter(s => {
+                                    const score = Number(s.score) || 0;
+                                    if (range === '0-59') return score < 60;
+                                    if (range === '60-69') return score >= 60 && score < 70;
+                                    if (range === '70-79') return score >= 70 && score < 80;
+                                    if (range === '80-89') return score >= 80 && score < 90;
+                                    return score >= 90;
+                                }).length;
+                                const percent = total === 0 ? 0 : Math.round((count / total) * 100);
+                                return `
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-slate-600">${range}分</span>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                                <div class="h-full bg-indigo-500" style="width: ${percent}%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-slate-800">${count}人 (${percent}%)</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-slate-800 mb-3">学生成绩排名 (前10名)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">排名</th>
+                                        <th class="px-3 py-2 text-left">学号</th>
+                                        <th class="px-3 py-2 text-left">姓名</th>
+                                        <th class="px-3 py-2 text-left">总分</th>
+                                        <th class="px-3 py-2 text-left">AC题数</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${students
+                                        .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0))
+                                        .slice(0, 10)
+                                        .map((s, idx) => `
+                                            <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                                                <td class="px-3 py-2">${idx + 1}</td>
+                                                <td class="px-3 py-2 font-mono">${escapeHtml(s.id)}</td>
+                                                <td class="px-3 py-2">${escapeHtml(s.name)}</td>
+                                                <td class="px-3 py-2 font-bold ${(Number(s.score) || 0) >= 80 ? 'text-emerald-600' : (Number(s.score) || 0) >= 60 ? 'text-amber-600' : 'text-rose-600'}">${s.score || 0}</td>
+                                                <td class="px-3 py-2">${s.ac || 0}</td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center text-sm text-slate-500">
+                        报告已生成，建议保存或打印此页面。
+                    </div>
+                </div>
+            `;
+            
+            // 显示报告模态框
+            showClassReportModal(reportHTML);
+        }
+
+        function showClassReportModal(content) {
+            // 创建或更新报告模态框
+            let modal = document.getElementById('classReportModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'classReportModal';
+                modal.className = 'fixed inset-0 z-[110] hidden items-center justify-center p-4';
+                modal.innerHTML = `
+                    <div class="absolute inset-0 bg-slate-950/60 modal-mask" onclick="closeClassReportModal()"></div>
+                    <div class="relative w-full max-w-4xl h-[80vh] rounded-2xl border border-slate-700 bg-white shadow-2xl overflow-hidden flex flex-col">
+                        <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+                            <div class="text-slate-800 font-semibold">班级成绩分析报告</div>
+                            <div class="flex gap-2">
+                                <button onclick="printClassReport()" class="px-3 py-1.5 text-sm border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition">打印</button>
+                                <button onclick="closeClassReportModal()" class="text-slate-400 hover:text-slate-800">✕</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-6" id="classReportContent"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            
+            document.getElementById('classReportContent').innerHTML = content;
+            showModal('classReportModal');
+        }
+
+        function closeClassReportModal() {
+            hideModal('classReportModal');
+        }
+
+        function printClassReport() {
+            const content = document.getElementById('classReportContent').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>班级成绩报告</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+                        h3 { color: #1e293b; }
+                        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f8fafc; }
+                        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+                        .stat-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; text-align: center; }
+                        .stat-value { font-size: 24px; font-weight: bold; margin: 5px 0; }
+                        .stat-label { color: #64748b; font-size: 14px; }
+                        @media print {
+                            body { margin: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${content}
+                    <div class="no-print" style="margin-top: 30px; text-align: center; color: #94a3b8; font-size: 12px;">
+                        使用 CodeEdu 教学平台生成
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
         }
 
         function closeContestBuilderModal() {
@@ -2454,6 +3392,30 @@
         // 绑定页面装载完毕执行
         document.addEventListener('DOMContentLoaded', init);
 
+    </script>
+    
+    <!-- 演示模式脚本 -->
+    <script src="demo-mode-simple.js"></script>
+    
+    <script>
+        // 在111.html的init函数中添加演示模式初始化
+        const originalInit = init;
+        init = function() {
+            originalInit();
+            // 初始化演示模式（只在init函数中初始化一次）
+            if (typeof demoMode !== 'undefined') {
+                demoMode.init();
+            }
+        };
+        
+        // 添加演示模式入口函数
+        function enterDemoMode() {
+            if (typeof demoMode !== 'undefined') {
+                demoMode.enterDemoMode();
+            } else {
+                alert('演示模式加载失败，请刷新页面重试。');
+            }
+        }
     </script>
 </body>
 </html>

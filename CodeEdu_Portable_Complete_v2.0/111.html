@@ -1,0 +1,3319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeEdu - 在线编程教学平台</title>
+    <!-- 使用可靠的Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <!-- 添加自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        accent: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- 备用方案：如果Tailwind加载失败，使用基础CSS -->
+    <style>
+        /* 基础CSS回退，确保页面至少有基本样式 */
+        body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .bg-white { background-color: white; }
+        .text-slate-800 { color: #1e293b; }
+        .font-bold { font-weight: bold; }
+        .rounded { border-radius: 0.5rem; }
+        .border { border-width: 1px; }
+        .border-slate-200 { border-color: #e2e8f0; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .h-screen { height: 100vh; }
+        .overflow-hidden { overflow: hidden; }
+        .bg-slate-50 { background-color: #f8fafc; }
+        .text-slate-800 { color: #1e293b; }
+        .font-sans { font-family: system-ui, -apple-system, sans-serif; }
+        .select-none { user-select: none; }
+        
+        /* 优化的自定义样式 */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .editor-textarea {
+            tab-size: 4;
+            font-family: "JetBrains Mono", "Fira Code", "Consolas", "Courier New", monospace;
+            white-space: pre;
+            line-height: 1.6;
+        }
+
+        .resizer {
+            width: 6px;
+            background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+            cursor: col-resize;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active { 
+            background: linear-gradient(to bottom, #2563eb, #7c3aed);
+            width: 8px;
+        }
+        #lineNumbers::-webkit-scrollbar { display: none; }
+        .modal-mask { 
+            backdrop-filter: blur(8px);
+            background: rgba(15, 23, 42, 0.7);
+        }
+        .view-hidden { display: none !important; }
+        .prose-lite p { margin: 0.75rem 0; line-height: 1.7; }
+        .prose-lite ul { list-style: disc; padding-left: 1.5rem; margin: 0.75rem 0; }
+        .prose-lite ol { list-style: decimal; padding-left: 1.5rem; margin: 0.75rem 0; }
+        .prose-lite code { 
+            background: rgba(59, 130, 246, 0.1); 
+            padding: 0.2rem 0.5rem; 
+            border-radius: 0.375rem;
+            color: #3b82f6;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.9em;
+        }
+        .prose-lite pre { 
+            background: rgba(15, 23, 42, 0.05); 
+            padding: 1rem; 
+            border-radius: 0.75rem; 
+            overflow: auto;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+        }
+        
+        /* 新增的优化样式 */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .shadow-soft {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .shadow-medium {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .shadow-hard {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .border-gradient {
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
+        }
+    </style>
+    <!-- 加载Inter字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 加载JetBrains Mono字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@
+
+    <!-- ========================================================= -->
+    <!-- 视图 1：全局平台大厅 -->
+    <!-- ========================================================= -->
+    <div id="view-dashboard" class="flex-1 flex flex-col h-full overflow-hidden">
+        <header class="h-16 shrink-0 bg-white border-b border-slate-200 px-8 flex items-center justify-between shadow-sm z-20">
+            <div class="flex items-center gap-8 min-w-0">
+                <div class="text-xl font-bold text-indigo-600 flex items-center gap-2 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                    <span id="sysNameDisplay">CodeEdu 教学平台</span>
+                </div>
+                <nav class="hidden md:flex items-center gap-1">
+                    <button onclick="switchDashboardTab('problems')" id="nav-problems" class="px-4 py-2 text-sm font-medium rounded-md text-indigo-600 bg-indigo-50 transition">公共题库</button>
+                    <button onclick="switchDashboardTab('contests')" id="nav-contests" class="px-4 py-2 text-sm font-medium rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition">编程比赛 / 测验</button>
+                    <button onclick="switchDashboardTab('classes')" id="nav-classes" class="teacher-only px-4 py-2 text-sm font-medium rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition view-hidden">班级管理</button>
+                </nav>
+            </div>
+
+            <div class="flex items-center gap-5 text-sm shrink-0">
+                <button onclick="openDocModal()" class="text-indigo-600 hover:text-indigo-800 font-medium transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    使用文档
+                </button>
+
+                <!-- 演示模式按钮 -->
+                <button onclick="demoMode.enterDemoMode()" class="text-purple-600 hover:text-purple-800 font-medium transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    演示模式
+                </button>
+
+                <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                    <span class="text-xs text-slate-500 ml-2">视角:</span>
+                    <select id="roleSwitcher" onchange="changeRole(this.value)" class="bg-transparent border-none text-slate-700 text-sm font-medium outline-none cursor-pointer pr-2">
+                        <option value="student">👨‍🎓 学生</option>
+                        <option value="teacher">👩‍🏫 教师 / 管理员</option>
+                    </select>
+                </div>
+
+                <div class="h-6 w-px bg-slate-300"></div>
+
+                <div class="flex items-center gap-2 cursor-pointer hover:opacity-80" onclick="openSettingsModal()" title="系统设置">
+                    <div id="dashAvatar" class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white shadow-md">用</div>
+                    <span id="dashName" class="font-medium text-slate-700 hidden sm:block">用户</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-7xl mx-auto">
+
+                <!-- 公共题库 -->
+                <div id="tab-problems" class="space-y-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">公共题库</h2>
+                            <p class="text-sm text-slate-500 mt-1">教师可发布新题；发布比赛 / 测验时，可直接从这里勾题组卷。</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="dashboardSearchInput" oninput="renderDashboardProblems()" placeholder="搜索题号 / 标题 / 标签..." class="px-4 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-72 shadow-sm">
+                            <button onclick="openImportModal('problem')" class="teacher-only view-hidden px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                导入 / 发布题目
+                            </button>
+                            <button onclick="openContestBuilderModal()" class="teacher-only view-hidden px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V18a2 2 0 01-2 2z"></path>
+                                </svg>
+                                从题库组卷
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">题库总量</div>
+                            <div class="text-2xl font-bold text-slate-800" id="stat-problem-total">0</div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">简单题</div>
+                            <div class="text-2xl font-bold text-emerald-600" id="stat-problem-easy">0</div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">中等题</div>
+                            <div class="text-2xl font-bold text-amber-600" id="stat-problem-medium">0</div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">困难题</div>
+                            <div class="text-2xl font-bold text-rose-600" id="stat-problem-hard">0</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                <tr>
+                                    <th class="px-6 py-4 font-medium">状态</th>
+                                    <th class="px-6 py-4 font-medium">编号</th>
+                                    <th class="px-6 py-4 font-medium">题目名称</th>
+                                    <th class="px-6 py-4 font-medium">标签</th>
+                                    <th class="px-6 py-4 font-medium">难度</th>
+                                    <th class="px-6 py-4 font-medium">分值</th>
+                                    <th class="px-6 py-4 font-medium text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardProblemList" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 比赛 / 测验 -->
+                <div id="tab-contests" class="view-hidden space-y-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">比赛 / 测验大厅</h2>
+                            <p class="text-sm text-slate-500 mt-1">教师可从公共题库勾题，也可额外导入 JSON 题目后直接纳入本场测试。</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="openContestBuilderModal()" class="teacher-only view-hidden px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition">
+                                发布比赛 / 测验
+                            </button>
+                            <button onclick="openImportModal('contest')" class="teacher-only view-hidden px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-700 shadow-sm transition">
+                                导入比赛 JSON
+                            </button>
+                        </div>
+                    </div>
+                    <div id="contestListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                </div>
+
+                <!-- 班级管理 -->
+                <div id="tab-classes" class="view-hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">班级成绩管理</h2>
+                            <p class="text-sm text-slate-500 mt-1">支持多班级管理、学生成绩分析与可视化统计。</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="openClassManagerModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                班级管理
+                            </button>
+                            <button onclick="openImportModal('student')" class="px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                导入学生
+                            </button>
+                            <button onclick="exportClassGradesCSV()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                导出成绩单
+                            </button>
+                            <button onclick="generateClassReport()" class="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 shadow-sm transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                生成报告
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 班级选择器 -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <div class="text-sm font-medium text-slate-700 mb-1">当前班级</div>
+                                <select id="classSelector" onchange="switchClass(this.value)" class="bg-slate-50 border border-slate-300 rounded-lg px-4 py-2 text-slate-800 font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                                    <option value="default">默认班级</option>
+                                </select>
+                            </div>
+                            <div class="text-sm text-slate-600">
+                                <span class="font-medium" id="currentClassInfo">0 名学生</span>
+                                <span class="mx-2">•</span>
+                                <span id="currentClassStats">平均分: 0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 统计卡片 -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">班级总人数</div>
+                            <div class="text-2xl font-bold text-slate-800" id="stat-total-students">0 人</div>
+                            <div class="text-xs text-slate-400 mt-2">较上周 <span class="text-emerald-600">+0%</span></div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">平均完成题数</div>
+                            <div class="text-2xl font-bold text-slate-800" id="stat-avg-ac">0.0 题</div>
+                            <div class="text-xs text-slate-400 mt-2">班级排名: <span class="text-amber-600">-</span></div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">活跃率 (有提交)</div>
+                            <div class="text-2xl font-bold text-emerald-600" id="stat-active">0%</div>
+                            <div class="text-xs text-slate-400 mt-2">参与度: <span class="text-emerald-600">低</span></div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="text-sm text-slate-500 mb-1">平均分</div>
+                            <div class="text-2xl font-bold text-indigo-600" id="stat-avg-score">0</div>
+                            <div class="text-xs text-slate-400 mt-2">最高分: <span class="text-rose-600">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- 可视化图表区域 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-lg font-semibold text-slate-800">成绩分布</div>
+                                <button onclick="refreshScoreChart()" class="text-xs text-slate-500 hover:text-slate-700">刷新</button>
+                            </div>
+                            <div class="h-64 flex items-center justify-center" id="scoreDistributionChart">
+                                <div class="text-slate-400 text-sm">加载成绩分布图表...</div>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-lg font-semibold text-slate-800">活跃度趋势</div>
+                                <button onclick="refreshActivityChart()" class="text-xs text-slate-500 hover:text-slate-700">刷新</button>
+                            </div>
+                            <div class="h-64 flex items-center justify-center" id="activityTrendChart">
+                                <div class="text-slate-400 text-sm">加载活跃度趋势图表...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 学生列表 -->
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <div class="text-lg font-semibold text-slate-800">学生列表</div>
+                                <div class="text-sm text-slate-500 mt-1">支持点击查看详情、批量操作</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="selectAllStudents()" class="px-3 py-1.5 text-sm border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition">全选</button>
+                                <button onclick="clearStudentSelection()" class="px-3 py-1.5 text-sm border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition">取消选择</button>
+                                <button onclick="batchRemoveStudents()" class="px-3 py-1.5 text-sm border border-rose-300 text-rose-700 rounded hover:bg-rose-50 transition">批量移除</button>
+                            </div>
+                        </div>
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                <tr>
+                                    <th class="px-6 py-4 font-medium w-10">
+                                        <input type="checkbox" id="selectAllStudents" onchange="toggleAllStudents(this.checked)">
+                                    </th>
+                                    <th class="px-6 py-4 font-medium">学号</th>
+                                    <th class="px-6 py-4 font-medium">姓名</th>
+                                    <th class="px-6 py-4 font-medium">总分</th>
+                                    <th class="px-6 py-4 font-medium">AC 题数</th>
+                                    <th class="px-6 py-4 font-medium">提交次数</th>
+                                    <th class="px-6 py-4 font-medium">最近提交</th>
+                                    <th class="px-6 py-4 font-medium text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100" id="classStudentList"></tbody>
+                        </table>
+                        <div class="px-6 py-4 border-t border-slate-200 text-sm text-slate-500 flex items-center justify-between">
+                            <div id="selectedCount">已选择 0 名学生</div>
+                            <div class="flex items-center gap-4">
+                                <button onclick="previousStudentPage()" class="text-slate-600 hover:text-slate-800 disabled:text-slate-300 disabled:cursor-not-allowed" id="prevPageBtn" disabled>上一页</button>
+                                <span id="studentPageInfo">第 1 页，共 1 页</span>
+                                <button onclick="nextStudentPage()" class="text-slate-600 hover:text-slate-800 disabled:text-slate-300 disabled:cursor-not-allowed" id="nextPageBtn" disabled>下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 视图 2：做题工作区 -->
+    <!-- ========================================================= -->
+    <div id="view-workspace" class="view-hidden flex-1 flex flex-col h-full overflow-hidden bg-[#0f172a]">
+        <header class="h-12 shrink-0 bg-[#0f172a] text-slate-300 border-b border-slate-800 px-4 flex items-center justify-between z-20">
+            <div class="flex items-center gap-4 min-w-0">
+                <button onclick="exitWorkspace()" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    返回大厅
+                </button>
+
+                <div class="h-4 w-px bg-slate-700 shrink-0"></div>
+
+                <button onclick="openProblemListModal()" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                    </svg>
+                    题目列表
+                </button>
+
+                <select id="problemSelector" onchange="switchProblem(this.value)" class="bg-transparent text-emerald-400 text-sm font-bold outline-none cursor-pointer hover:text-emerald-300 transition appearance-none pr-4 min-w-0"></select>
+
+                <div id="workspaceContextBadge" class="hidden text-xs px-2 py-1 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-300 truncate max-w-[260px]"></div>
+            </div>
+
+            <div class="text-xs text-slate-500 font-mono tracking-wider flex items-center gap-3 shrink-0">
+                <span class="hidden sm:inline">环境隔离中 · 数据自动存档</span>
+                <div id="wsAvatar" class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white text-xs">用</div>
+            </div>
+        </header>
+
+        <div class="flex-1 flex overflow-hidden relative" id="mainContainerWorkspace">
+            <section id="leftPanel" class="bg-white flex flex-col overflow-hidden select-text" style="width: 45%;">
+                <div class="shrink-0 border-b border-slate-200 px-6 pt-5 pb-4 bg-white">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2" id="ui-title-area"></div>
+                            <div class="flex flex-wrap gap-2 text-xs" id="ui-tags-area"></div>
+                        </div>
+                        <div class="text-right text-xs text-slate-500">
+                            <div class="text-emerald-600 font-bold mb-1">满分: <span id="ui-score">100</span> 分</div>
+                            <div>通过率 <span class="font-semibold text-slate-700" id="ui-pass-rate">--</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6 bg-slate-50">
+                    <div id="ui-description" class="prose-lite text-slate-700 leading-relaxed space-y-3 text-sm max-w-none"></div>
+                    <div>
+                        <h2 class="font-semibold text-slate-900 mb-3">示例</h2>
+                        <div id="ui-examples" class="space-y-3"></div>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-slate-900 mb-3">约束</h2>
+                        <div id="ui-constraints" class="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700 space-y-1 font-mono shadow-sm"></div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="dragResizer" class="resizer shrink-0 flex flex-col justify-center items-center">
+                <div class="w-1 h-8 bg-slate-500 rounded-full"></div>
+            </div>
+
+            <section id="rightPanel" class="flex-1 bg-[#0f172a] flex flex-col overflow-hidden" style="width: 55%;">
+                <div class="h-11 shrink-0 bg-[#111827] border-b border-slate-800 px-4 flex items-center justify-between select-none gap-3">
+                    <div class="flex items-center gap-3 text-sm min-w-0">
+                        <select id="languageSelect" onchange="switchLanguage()" class="bg-slate-800 text-slate-200 px-2 py-1 rounded outline-none border border-slate-700 cursor-pointer hover:bg-slate-700 transition"></select>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="fillDemoAnswer()" class="text-xs px-3 py-1.5 rounded border border-slate-600 text-slate-300 hover:bg-slate-700 transition">✨ 演示代码</button>
+                        <button onclick="resetCode()" class="text-xs px-3 py-1.5 rounded border border-slate-600 text-rose-300 hover:bg-rose-900/30 transition">↺ 重置代码</button>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex overflow-hidden relative bg-[#0f172a]">
+                    <div id="lineNumbers" class="w-12 shrink-0 bg-[#111827] border-r border-slate-800 text-right pr-3 pt-4 pb-4 font-mono text-sm text-slate-600 overflow-y-auto select-none">1</div>
+                    <textarea id="codeEditor" class="editor-textarea flex-1 w-full h-full resize-none outline-none bg-transparent text-slate-200 pt-4 pb-4 pl-4 pr-4 leading-relaxed text-sm" spellcheck="false"></textarea>
+                </div>
+
+                <div class="shrink-0 border-t border-slate-700 bg-[#111827] flex flex-col transition-all duration-300" id="consoleContainer">
+                    <div class="px-4 pt-2">
+                        <div class="flex gap-2 text-sm mb-2 flex-wrap">
+                            <button onclick="switchBottomTab('case')" id="tabCase" class="bottom-tab px-4 py-1.5 rounded-t-md bg-slate-800 text-white border-t border-l border-r border-slate-700">测试用例</button>
+                            <button onclick="switchBottomTab('result')" id="tabResult" class="bottom-tab px-4 py-1.5 rounded-t-md text-slate-400 hover:text-slate-200 border border-transparent">判题结果</button>
+                            <button onclick="switchBottomTab('log')" id="tabLog" class="bottom-tab px-4 py-1.5 rounded-t-md text-slate-400 hover:text-slate-200 border border-transparent">运行日志</button>
+                            <button onclick="switchBottomTab('history')" id="tabHistory" class="bottom-tab px-4 py-1.5 rounded-t-md text-slate-400 hover:text-slate-200 border border-transparent">我的提交</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#020617] h-64 overflow-hidden border-t border-slate-800 relative select-text">
+                        <!-- Panel: Cases -->
+                        <div id="panelCase" class="h-full overflow-y-auto p-4 flex flex-col gap-3">
+                            <div class="flex gap-2 items-center" id="caseTabs"></div>
+                            <div class="flex gap-2">
+                                <button onclick="addCase()" class="text-xs px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition">新增用例</button>
+                                <button onclick="deleteCurrentCase()" class="text-xs px-3 py-1.5 rounded border border-slate-700 text-rose-300 hover:bg-rose-900/20 transition">删除用例</button>
+                                <button onclick="resetCases()" class="text-xs px-3 py-1.5 rounded border border-slate-700 text-amber-300 hover:bg-amber-900/20 transition">恢复默认</button>
+                            </div>
+                            <div id="dynamicCaseInputs" class="flex-1 flex flex-col gap-2 text-sm font-mono"></div>
+                        </div>
+
+                        <!-- Panel: Result -->
+                        <div id="panelResult" class="h-full overflow-y-auto p-4 hidden flex flex-col">
+                            <div class="flex items-center justify-between mb-3 shrink-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-slate-600" id="statusDot"></span>
+                                    <span id="judgeTitle" class="text-slate-400 font-bold text-lg">请先运行或提交代码</span>
+                                </div>
+                                <div id="scoreDisplay" class="text-lg font-black font-mono hidden text-emerald-400">+100 PTS</div>
+                            </div>
+                            <div class="flex flex-wrap gap-3 mb-4 text-sm shrink-0" id="metricCards"></div>
+                            <div class="rounded border border-slate-800 bg-slate-900/50 p-3 text-sm text-slate-400 flex-1 overflow-y-auto">
+                                <div id="judgeMessage">等待操作...</div>
+                            </div>
+                        </div>
+
+                        <!-- Panel: Log -->
+                        <div id="panelLog" class="h-full overflow-y-auto p-4 hidden">
+                            <div id="logContent" class="font-mono text-xs text-slate-400 whitespace-pre-wrap leading-6"></div>
+                        </div>
+
+                        <!-- Panel: History -->
+                        <div id="panelHistory" class="h-full overflow-y-auto p-4 hidden">
+                            <div class="flex items-center justify-between mb-3 gap-3">
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-200">当前题目提交记录</div>
+                                    <div class="text-xs text-slate-500">记录按题目单独保存在本地内存。</div>
+                                </div>
+                                <button onclick="clearSubmissionHistory()" class="text-xs px-3 py-1.5 rounded border border-slate-700 text-rose-300 hover:bg-rose-900/20 transition">清空记录</button>
+                            </div>
+                            <div id="historyList" class="space-y-3"></div>
+                        </div>
+                    </div>
+
+                    <div class="px-4 py-3 flex items-center justify-between gap-4 bg-[#111827] border-t border-slate-800">
+                        <div id="statusText" class="text-xs text-slate-400 font-mono">Ready.</div>
+                        <div class="flex items-center gap-3">
+                            <button id="runBtn" onclick="runCode()" class="px-4 py-1.5 bg-slate-700 text-slate-200 rounded hover:bg-slate-600 transition text-sm font-medium">运行测试</button>
+                            <button id="submitBtn" onclick="submitCode()" class="px-5 py-1.5 bg-emerald-600 text-white rounded font-medium hover:bg-emerald-500 transition text-sm flex items-center shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+                                <svg id="loadingIcon" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span id="btnText">正式提交</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 模态框组 (Modals) -->
+    <!-- ========================================================= -->
+
+    <div id="exportModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/60 modal-mask" onclick="closeExportModal()"></div>
+        <div class="relative w-full max-w-sm rounded-2xl bg-white shadow-2xl overflow-hidden p-6 text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">导出成功</h3>
+            <p class="text-sm text-slate-500 mb-6">数据已打包为 CSV 文件，浏览器将自动开始下载。</p>
+            <button onclick="closeExportModal()" class="w-full py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">知道了</button>
+        </div>
+    </div>
+
+    <div id="docModal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/80 modal-mask" onclick="closeDocModal()"></div>
+        <div class="relative w-full max-w-5xl h-[80vh] rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between shrink-0">
+                <div class="text-white font-semibold flex items-center gap-2">
+                    <span class="text-xl">📖</span> 应用说明文档
+                </div>
+                <button onclick="closeDocModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div class="flex-1 flex overflow-hidden">
+                <div class="w-52 bg-slate-950/50 border-r border-slate-800 flex flex-col py-2">
+                    <button onclick="switchDocTab('intro')" id="docTab-intro" class="text-left px-5 py-3 text-sm text-sky-400 bg-slate-800/50 border-l-2 border-sky-400 transition">使用介绍</button>
+                    <button onclick="switchDocTab('judge')" id="docTab-judge" class="text-left px-5 py-3 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 border-l-2 border-transparent transition">判题规则</button>
+                    <button onclick="switchDocTab('contest')" id="docTab-contest" class="text-left px-5 py-3 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 border-l-2 border-transparent transition">组卷与考试</button>
+                    <button onclick="switchDocTab('ugc')" id="docTab-ugc" class="text-left px-5 py-3 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 border-l-2 border-transparent transition">自定义题库</button>
+                    <button onclick="switchDocTab('settings')" id="docTab-settings" class="text-left px-5 py-3 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 border-l-2 border-transparent transition">本地缓存</button>
+                </div>
+                <div class="flex-1 p-8 overflow-y-auto bg-slate-900 prose-lite text-slate-300" id="docContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="problemListModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/60 modal-mask" onclick="closeProblemListModal()"></div>
+        <div class="relative w-full max-w-4xl rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+                <div>
+                    <div class="text-white font-semibold">题目列表</div>
+                    <div class="text-xs text-slate-500 mt-1" id="problemListContextTip">全部可用题目</div>
+                </div>
+                <button onclick="closeProblemListModal()" class="text-sm px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition">关闭</button>
+            </div>
+            <div class="p-5 border-b border-slate-800 flex flex-col md:flex-row gap-3 shrink-0">
+                <input id="problemSearchInput" oninput="renderProblemList()" type="text" placeholder="搜索题号、标题、标签..." class="flex-1 bg-slate-800 text-slate-200 px-3 py-2 rounded border border-slate-700 outline-none focus:border-sky-500" />
+                <select id="difficultyFilter" onchange="renderProblemList()" class="bg-slate-800 text-slate-200 px-3 py-2 rounded border border-slate-700 outline-none focus:border-sky-500">
+                    <option value="all">全部难度</option>
+                    <option value="简单">简单</option>
+                    <option value="中等">中等</option>
+                    <option value="困难">困难</option>
+                </select>
+                <select id="solvedFilter" onchange="renderProblemList()" class="bg-slate-800 text-slate-200 px-3 py-2 rounded border border-slate-700 outline-none focus:border-sky-500">
+                    <option value="all">全部状态</option>
+                    <option value="solved">只看已通过</option>
+                    <option value="unsolved">只看未通过</option>
+                </select>
+            </div>
+            <div id="problemListContainer" class="flex-1 overflow-y-auto p-5 space-y-3 bg-slate-950"></div>
+        </div>
+    </div>
+
+    <!-- 通用导入 -->
+    <div id="importModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/80 modal-mask" onclick="closeImportModal()"></div>
+        <div class="relative w-full max-w-3xl rounded-2xl border border-slate-700 bg-[#0f172a] shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
+            <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between shrink-0">
+                <div class="text-white font-semibold" id="importModalTitle">⚡ 导入数据 (JSON)</div>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div class="p-5 flex-1 overflow-y-auto flex flex-col gap-4">
+                <div id="importModalHint" class="text-sm text-amber-400 bg-amber-950/30 p-3 rounded border border-amber-900/50">
+                    💡 请按照标准 JSON 格式编写。上传后将解析并保存在本地环境中。
+                </div>
+
+                <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                    <div class="text-sm text-slate-300 mb-2">读取本地 JSON 文件</div>
+                    <input id="importJsonFileInput" type="file" accept=".json,application/json" class="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white hover:file:bg-sky-500">
+                    <div class="text-xs text-slate-500 mt-2">选择文件后会自动读取到下方文本框。</div>
+                </div>
+
+                <textarea id="importJsonInput" class="w-full flex-1 min-h-[320px] bg-[#1e293b] text-emerald-300 font-mono text-sm p-4 rounded border border-slate-700 outline-none focus:border-sky-500 resize-none" spellcheck="false"></textarea>
+            </div>
+            <div class="px-5 py-4 border-t border-slate-800 flex justify-end gap-3 shrink-0 bg-slate-900">
+                <button onclick="closeImportModal()" class="px-4 py-2 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition text-sm">取消</button>
+                <button id="importSubmitBtn" onclick="handleImportSubmit()" class="px-4 py-2 rounded bg-sky-600 text-white hover:bg-sky-500 transition text-sm font-medium">保存并导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 组卷 -->
+    <div id="contestBuilderModal" class="fixed inset-0 z-[75] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/80 modal-mask" onclick="closeContestBuilderModal()"></div>
+        <div class="relative w-full max-w-6xl h-[88vh] rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between shrink-0">
+                <div>
+                    <div class="text-white font-semibold" id="contestBuilderTitle">🧪 发布比赛 / 测验</div>
+                    <div class="text-xs text-slate-500 mt-1">可勾选公共题库题目；也可附加导入 JSON 题目，导入后自动进入公共题库，并可直接纳入本场考试。</div>
+                </div>
+                <button onclick="closeContestBuilderModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <div class="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-[360px,1fr]">
+                <div class="border-r border-slate-800 p-5 overflow-y-auto space-y-4 bg-slate-950/40">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">比赛 / 测验名称</label>
+                        <input id="contestTitleInput" type="text" placeholder="例如：春季数据结构测验" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 outline-none focus:border-sky-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">状态</label>
+                            <select id="contestStatusInput" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 outline-none focus:border-sky-500">
+                                <option value="未开始">未开始</option>
+                                <option value="进行中">进行中</option>
+                                <option value="已结束">已结束</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">预计参与人数</label>
+                            <input id="contestCountInput" type="number" value="50" min="0" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 outline-none focus:border-sky-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">时间说明</label>
+                        <input id="contestTimeInput" type="text" placeholder="例如：明天 14:00 开始 / 剩余 01:23:45" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 outline-none focus:border-sky-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">描述</label>
+                        <textarea id="contestDescInput" rows="4" placeholder="例如：包含 4 道题，覆盖数组、字符串和二分查找。" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 outline-none focus:border-sky-500 resize-none"></textarea>
+                    </div>
+
+                    <div class="rounded-xl border border-emerald-800/40 bg-emerald-950/20 p-4">
+                        <div class="text-sm font-medium text-emerald-300 mb-2">已选题目</div>
+                        <div id="selectedProblemSummary" class="text-xs text-emerald-200/80 leading-6">尚未选择题目</div>
+                    </div>
+                </div>
+
+                <div class="overflow-hidden flex flex-col">
+                    <div class="p-5 border-b border-slate-800 shrink-0 space-y-4">
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <input id="contestProblemSearchInput" oninput="renderContestBuilderProblemList()" type="text" placeholder="搜索公共题库题号 / 标题 / 标签..." class="flex-1 bg-slate-800 text-slate-200 px-3 py-2 rounded border border-slate-700 outline-none focus:border-sky-500">
+                            <button onclick="selectAllContestProblemsFiltered()" class="px-4 py-2 rounded border border-slate-700 text-slate-200 hover:bg-slate-800 transition text-sm">全选当前筛选</button>
+                            <button onclick="clearContestProblemSelection()" class="px-4 py-2 rounded border border-slate-700 text-rose-300 hover:bg-rose-900/20 transition text-sm">清空已选</button>
+                        </div>
+
+                        <div class="rounded-xl border border-slate-700 bg-slate-950/50 p-4">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+                                <div>
+                                    <div class="text-sm font-medium text-slate-200">附加导入 JSON 题目</div>
+                                    <div class="text-xs text-slate-500 mt-1">这里导入的题目会先加入公共题库，并自动勾选加入本场测验。</div>
+                                </div>
+                                <input id="contestJsonFileInput" type="file" accept=".json,application/json" class="block text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white hover:file:bg-sky-500">
+                            </div>
+                            <textarea id="contestExtraJsonInput" rows="6" placeholder='可选：在这里粘贴 JSON 题目数据...' class="w-full bg-slate-800 text-emerald-300 font-mono text-sm p-4 rounded border border-slate-700 outline-none focus:border-sky-500 resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-5 bg-[#0b1120]" id="builderProblemList"></div>
+                </div>
+            </div>
+
+            <div class="px-5 py-4 border-t border-slate-800 flex justify-end gap-3 bg-slate-950 shrink-0">
+                <button onclick="closeContestBuilderModal()" class="px-4 py-2 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition text-sm">取消</button>
+                <button onclick="saveContestFromBuilder()" class="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-500 transition text-sm font-medium">保存发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置 -->
+    <div id="settingsModal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/80 modal-mask" onclick="closeSettingsModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <div class="text-white font-semibold flex items-center gap-2">
+                    <span class="text-xl">⚙️</span> 系统设置
+                </div>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div class="p-6 space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">系统展示名称</label>
+                    <input id="settingSysName" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 outline-none focus:border-sky-500 transition" placeholder="例如：在线做题系统">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">你的专属昵称</label>
+                    <input id="settingUserName" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 outline-none focus:border-sky-500 transition" placeholder="例如：用户">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">头像文字 (1字符)</label>
+                        <input id="settingAvatarText" type="text" maxlength="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 outline-none focus:border-sky-500 transition text-center font-bold" placeholder="用">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">头像主题色</label>
+                        <select id="settingAvatarColor" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 outline-none focus:border-sky-500 transition">
+                            <option value="bg-rose-500">玫瑰红</option>
+                            <option value="bg-indigo-500">靛蓝色</option>
+                            <option value="bg-emerald-500">翠绿色</option>
+                            <option value="bg-amber-500">琥珀黄</option>
+                            <option value="bg-sky-500">天蓝色</option>
+                            <option value="bg-fuchsia-500">紫红色</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="px-5 py-4 border-t border-slate-800 flex justify-end gap-3 bg-[#0f172a]">
+                <button onclick="closeSettingsModal()" class="px-4 py-2 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition text-sm">取消</button>
+                <button onclick="saveSystemSettings()" class="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-500 transition text-sm font-medium">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 班级管理模态框 -->
+    <div id="classManagerModal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/80 modal-mask" onclick="closeClassManagerModal()"></div>
+        <div class="relative w-full max-w-2xl rounded-2xl border border-slate-700 bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div class="text-slate-800 font-semibold">班级管理</div>
+                <button onclick="closeClassManagerModal()" class="text-slate-400 hover:text-slate-800">✕</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6" id="classManagerContent">
+                <!-- 内容由JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 班级报告模态框 -->
+    <div id="classReportModal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-950/60 modal-mask" onclick="closeClassReportModal()"></div>
+        <div class="relative w-full max-w-4xl h-[80vh] rounded-2xl border border-slate-700 bg-white shadow-2xl overflow-hidden flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div class="text-slate-800 font-semibold">班级成绩分析报告</div>
+                <div class="flex gap-2">
+                    <button onclick="printClassReport()" class="px-3 py-1.5 text-sm border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition">打印</button>
+                    <button onclick="closeClassReportModal()" class="text-slate-400 hover:text-slate-800">✕</button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6" id="classReportContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 全局状态定义
+        // ==========================================
+        const BASE_PROBLEM_DATA = {
+            "1": {
+                id: "1", title: "两数之和", difficulty: "简单", tags: ["数组", "哈希表"],
+                desc: "<p>给定一个整数数组 <code>nums</code> 和一个整数目标值 <code>target</code>，请你在该数组中找出 <strong>和为目标值</strong> <code>target</code> 的那 <strong>两个</strong> 整数，并返回它们的数组下标。</p><p>你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。</p>",
+                examples: [
+                    { in: "nums = [2,7,11,15], target = 9", out: "[0,1]", exp: "因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。" },
+                    { in: "nums = [3,2,4], target = 6", out: "[1,2]" }
+                ],
+                constraints: ["2 <= nums.length <= 10^4", "-10^9 <= nums[i] <= 10^9", "-10^9 <= target <= 10^9", "只会存在一个有效答案"],
+                inputParams: ["nums", "target"],
+                defaultCases: [
+                    { nums: "[2,7,11,15]", target: "9", expected: "[0,1]" },
+                    { nums: "[3,2,4]", target: "6", expected: "[1,2]" }
+                ],
+                templates: { 
+                    python: "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        pass", 
+                    javascript: "/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nvar twoSum = function(nums, target) {\n    \n};" 
+                },
+                answers: { 
+                    python: "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        hashmap = {}\n        for i, num in enumerate(nums):\n            if target - num in hashmap:\n                return [hashmap[target - num], i]\n            hashmap[num] = i", 
+                    javascript: "var twoSum = function(nums, target) {\n    let map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        let complement = target - nums[i];\n        if (map.has(complement)) {\n            return [map.get(complement), i];\n        }\n        map.set(nums[i], i);\n    }\n};" 
+                },
+                validKeywords: { python: ["return"], javascript: ["return"] },
+                score: 100, passRate: "65.2%"
+            },
+            "20": {
+                id: "20", title: "有效的括号", difficulty: "简单", tags: ["栈", "字符串"],
+                desc: "<p>给定一个只包括 <code>'('</code>，<code>')'</code>，<code>'{'</code>，<code>'}'</code>，<code>'['</code>，<code>']'</code> 的字符串 <code>s</code> ，判断字符串是否有效。</p>",
+                examples: [
+                    { in: 's = "()"', out: "true" },
+                    { in: 's = "()[]{}"', out: "true" },
+                    { in: 's = "(]"', out: "false" }
+                ],
+                constraints: ["1 <= s.length <= 10^4", "s 仅由括号 '()[]{}' 组成"],
+                inputParams: ["s"],
+                defaultCases: [
+                    { s: '"()"', expected: "true" },
+                    { s: '"()[]{}"', expected: "true" },
+                    { s: '"(]"', expected: "false" }
+                ],
+                templates: { 
+                    python: "class Solution:\n    def isValid(self, s: str) -> bool:\n        pass", 
+                    javascript: "/**\n * @param {string} s\n * @return {boolean}\n */\nvar isValid = function(s) {\n    \n};" 
+                },
+                answers: { 
+                    python: "class Solution:\n    def isValid(self, s: str) -> bool:\n        stack = []\n        mapping = {')': '(', '}': '{', ']': '['}\n        for char in s:\n            if char in mapping:\n                if not stack or stack.pop() != mapping[char]:\n                    return False\n            else:\n                stack.append(char)\n        return not stack", 
+                    javascript: "var isValid = function(s) {\n    let stack = [];\n    let map = {')': '(', '}': '{', ']': '['};\n    for(let char of s) {\n        if(map[char]) {\n            if(!stack.length || stack.pop() !== map[char]) return false;\n        } else {\n            stack.push(char);\n        }\n    }\n    return stack.length === 0;\n};" 
+                },
+                validKeywords: { python: ["return"], javascript: ["return"] },
+                score: 100, passRate: "44.5%"
+            }
+        };
+
+        let PROBLEM_DATA = {};
+        let CLASS_STUDENTS = [];
+        let CONTEST_DATA = [];
+        
+        let currentRole = 'student';
+        let currentProblemKey = "1";
+        let currentLanguage = "python";
+        let currentCaseIndex = 0;
+        let activeRequestId = 0;
+        let isBusy = false;
+        
+        let currentContestId = null;
+        let contestBuilderEditingId = null;
+        let contestBuilderSelected = new Set();
+        let currentImportType = 'problem';
+
+        // ==========================================
+        // 安全核心与工具
+        // ==========================================
+        function sanitizeHTML(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(String(html || ''), 'text/html');
+            const allowedTags = new Set(['P', 'BR', 'STRONG', 'B', 'EM', 'I', 'CODE', 'PRE', 'UL', 'OL', 'LI', 'H1', 'H2', 'H3', 'H4', 'BLOCKQUOTE', 'SPAN', 'DIV']);
+
+            function cleanNode(node) {
+                const children = Array.from(node.childNodes);
+                for (const child of children) {
+                    if (child.nodeType === Node.ELEMENT_NODE) {
+                        const tagName = child.tagName.toUpperCase();
+                        if (!allowedTags.has(tagName)) {
+                            const fragment = document.createDocumentFragment();
+                            while (child.firstChild) fragment.appendChild(child.firstChild);
+                            child.replaceWith(fragment);
+                            continue;
+                        }
+                        const attrs = Array.from(child.attributes);
+                        for (const attr of attrs) {
+                            const attrName = attr.name.toLowerCase();
+                            if (attrName.startsWith('on') || attrName === 'style' || attrName === 'src' || attrName === 'href' || String(attr.value).toLowerCase().includes('javascript:')) {
+                                child.removeAttribute(attr.name);
+                            }
+                        }
+                        cleanNode(child);
+                    } else if (child.nodeType === Node.COMMENT_NODE) {
+                        child.remove();
+                    }
+                }
+            }
+            cleanNode(doc.body);
+            return doc.body.innerHTML;
+        }
+
+        function escapeHtml(str = '') {
+            return String(str)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function safeJSONParse(raw, fallback) {
+            try { return raw ? JSON.parse(raw) : fallback; }
+            catch (e) { return fallback; }
+        }
+
+        function getDifficultyClass(difficulty) {
+            return {
+                '简单': 'text-emerald-700 bg-emerald-100',
+                '中等': 'text-amber-700 bg-amber-100',
+                '困难': 'text-rose-700 bg-rose-100'
+            }[difficulty] || 'text-slate-700 bg-slate-100';
+        }
+
+        function showModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function hideModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function uid(prefix = 'id') {
+            return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        }
+
+        function getProblemEntriesSorted(keys = null) {
+            const entries = Object.entries(PROBLEM_DATA).filter(([key]) => !keys || keys.includes(key));
+            return entries.sort((a, b) => Number(a[1].id) - Number(b[1].id));
+        }
+
+        function deepClone(obj) {
+            return JSON.parse(JSON.stringify(obj));
+        }
+
+        // ==========================================
+        // 模态框及基础UI管理
+        // ==========================================
+        function openDocModal() {
+            showModal('docModal');
+            switchDocTab('intro');
+        }
+
+        function closeDocModal() {
+            hideModal('docModal');
+        }
+
+        function switchDocTab(tabName) {
+            const tabs = ['intro', 'judge', 'contest', 'ugc', 'settings'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`docTab-${t}`);
+                if (btn) {
+                    if (t === tabName) {
+                        btn.className = "text-left px-5 py-3 text-sm text-sky-400 bg-slate-800/50 border-l-2 border-sky-400 transition";
+                    } else {
+                        btn.className = "text-left px-5 py-3 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 border-l-2 border-transparent transition";
+                    }
+                }
+            });
+
+            const docContent = document.getElementById('docContent');
+            const docs = {
+                intro: "<h3>关于 CodeEdu</h3><p>CodeEdu 是一个轻量级、完全基于浏览器本地计算资源的在线编程教学环境。非常适合教学过程中的实时测验与随堂练习。</p>",
+                judge: "<h3>判题规则</h3><p>系统会在浏览器 Sandbox 内进行安全的逻辑检测，支持超时校验和无限循环阻断。若有内存泄漏，会被浏览器自动拦截。</p>",
+                contest: "<h3>组卷功能</h3><p>教师可以从题库中挑选多道题目组成试卷，也可导入外部题目数据加入试卷。学生进入考场后，将只能看到选定的题目。</p>",
+                ugc: "<h3>自定义题库</h3><p>你可以按规定格式编写 JSON，导入后将作为私有题库持久化储存在本地缓存中。可以借助此功能轻松分发新题目。</p>",
+                settings: "<h3>本地缓存</h3><p>你所有的代码草稿、提交记录、测试用例等都会存储在浏览器的 LocalStorage 中。清除浏览器缓存会导致数据丢失。</p>"
+            };
+            docContent.innerHTML = docs[tabName] || "内容构建中...";
+        }
+
+        function openProblemListModal() {
+            showModal('problemListModal');
+            renderProblemList();
+        }
+
+        function closeProblemListModal() {
+            hideModal('problemListModal');
+        }
+
+        function renderProblemList() {
+            const container = document.getElementById('problemListContainer');
+            if(!container) return;
+            const keyword = (document.getElementById('problemSearchInput').value || '').trim().toLowerCase();
+            const difficulty = document.getElementById('difficultyFilter').value;
+            const solved = document.getElementById('solvedFilter').value;
+
+            container.replaceChildren();
+
+            const allowedKeys = getWorkspaceProblemKeys();
+            let entries = allowedKeys.map(k => [k, PROBLEM_DATA[k]]).filter(Boolean);
+
+            entries = entries.filter(([key, p]) => {
+                const matchKeyword = !keyword || `${p.id} ${p.title} ${(p.tags||[]).join(' ')}`.toLowerCase().includes(keyword);
+                const matchDiff = difficulty === 'all' || p.difficulty === difficulty;
+                const isAC = getSolvedStatus(key);
+                const matchSolved = solved === 'all' || (solved === 'solved' && isAC) || (solved === 'unsolved' && !isAC);
+                return matchKeyword && matchDiff && matchSolved;
+            });
+
+            if(!entries.length) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-500 bg-slate-900 rounded border border-dashed border-slate-700">没有找到题目喵。</div>`;
+                return;
+            }
+
+            entries.forEach(([key, p]) => {
+                const isAC = getSolvedStatus(key);
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-lg hover:border-slate-600 transition cursor-pointer";
+                div.onclick = () => {
+                    switchProblem(key);
+                    closeProblemListModal();
+                };
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0">
+                        ${isAC ? `<span class="text-emerald-500 shrink-0">✔</span>` : `<span class="text-slate-600 shrink-0">-</span>`}
+                        <div class="truncate text-slate-200 text-sm font-medium">No.${escapeHtml(p.id)} ${escapeHtml(p.title)}</div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="px-2 py-0.5 text-[10px] rounded-full ${getDifficultyClass(p.difficulty)}">${escapeHtml(p.difficulty)}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function openImportModal(type) {
+            currentImportType = type;
+            const titles = { problem: '导入 / 发布题目 JSON', contest: '导入比赛数据 JSON', student: '导入学生名单 JSON' };
+            document.getElementById('importModalTitle').innerText = titles[type] || '导入数据';
+            document.getElementById('importJsonInput').value = '';
+            const fileInput = document.getElementById('importJsonFileInput');
+            if(fileInput) fileInput.value = '';
+            showModal('importModal');
+        }
+
+        function closeImportModal() {
+            hideModal('importModal');
+        }
+
+        function handleImportSubmit() {
+            const text = document.getElementById('importJsonInput').value;
+            try {
+                const data = JSON.parse(text);
+                if (currentImportType === 'problem') {
+                    mergeProblemsIntoBank(data);
+                    renderDashboardProblems();
+                } else if (currentImportType === 'student') {
+                    if(Array.isArray(data)) {
+                        CLASS_STUDENTS = data;
+                        localStorage.setItem('oj_class_students', JSON.stringify(CLASS_STUDENTS));
+                        renderClassStudentList();
+                    } else throw new Error('学生名单必须是数组');
+                } else if (currentImportType === 'contest') {
+                    if(Array.isArray(data)) {
+                        CONTEST_DATA = [...data, ...CONTEST_DATA];
+                        localStorage.setItem('oj_contests', JSON.stringify(CONTEST_DATA));
+                        renderContestList();
+                    } else throw new Error('比赛数据必须是数组');
+                }
+                closeImportModal();
+                alert('导入成功！');
+            } catch (err) {
+                alert('解析 JSON 失败: ' + err.message);
+            }
+        }
+
+        function openContestBuilderModal() {
+            openContestBuilder();
+        }
+        
+        function openContestBuilder(contestId = null) {
+            contestBuilderEditingId = contestId || null;
+            contestBuilderSelected.clear();
+            
+            if (contestId) {
+                const contest = CONTEST_DATA.find(c => c.id === contestId);
+                if (contest) {
+                    document.getElementById('contestTitleInput').value = contest.title || '';
+                    document.getElementById('contestStatusInput').value = contest.status || '未开始';
+                    document.getElementById('contestCountInput').value = contest.count || 50;
+                    document.getElementById('contestTimeInput').value = contest.time || '';
+                    document.getElementById('contestDescInput').value = contest.desc || '';
+                    
+                    if (Array.isArray(contest.problemKeys)) {
+                        contest.problemKeys.forEach(k => contestBuilderSelected.add(k));
+                    }
+                }
+            } else {
+                document.getElementById('contestTitleInput').value = '';
+                document.getElementById('contestStatusInput').value = '未开始';
+                document.getElementById('contestCountInput').value = 50;
+                document.getElementById('contestTimeInput').value = '';
+                document.getElementById('contestDescInput').value = '';
+            }
+            
+            updateSelectedProblemSummary();
+            renderContestBuilderProblemList();
+            showModal('contestBuilderModal');
+        }
+
+        // ==========================================
+        // 编辑器与布局控制
+        // ==========================================
+        function initResizer() {
+            const resizer = document.getElementById('dragResizer');
+            const leftPanel = document.getElementById('leftPanel');
+            const rightPanel = document.getElementById('rightPanel');
+            const container = document.getElementById('mainContainerWorkspace');
+
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                document.body.style.cursor = 'col-resize';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const containerRect = container.getBoundingClientRect();
+                let newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+                if (newWidth < 20) newWidth = 20;
+                if (newWidth > 80) newWidth = 80;
+                leftPanel.style.width = `${newWidth}%`;
+                rightPanel.style.width = `${100 - newWidth}%`;
+                localStorage.setItem('oj_layout_width', newWidth);
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.style.cursor = '';
+                }
+            });
+        }
+
+        function restoreLayoutWidth() {
+            const savedWidth = localStorage.getItem('oj_layout_width');
+            if (savedWidth) {
+                document.getElementById('leftPanel').style.width = `${savedWidth}%`;
+                document.getElementById('rightPanel').style.width = `${100 - savedWidth}%`;
+            }
+        }
+
+        function initEditor() {
+            const editor = document.getElementById('codeEditor');
+            if(!editor) return;
+            editor.addEventListener('input', () => {
+                updateLineNumbers();
+                saveDraft();
+            });
+            editor.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const start = editor.selectionStart;
+                    const end = editor.selectionEnd;
+                    editor.value = editor.value.substring(0, start) + "    " + editor.value.substring(end);
+                    editor.selectionStart = editor.selectionEnd = start + 4;
+                    updateLineNumbers();
+                    saveDraft();
+                }
+            });
+            editor.addEventListener('scroll', () => {
+                const lineNumbers = document.getElementById('lineNumbers');
+                if(lineNumbers) lineNumbers.scrollTop = editor.scrollTop;
+            });
+        }
+
+        function updateLineNumbers() {
+            const editor = document.getElementById("codeEditor");
+            const lineNumbers = document.getElementById("lineNumbers");
+            if (!editor || !lineNumbers) return;
+
+            const lineCount = Math.max(1, editor.value.split('\n').length);
+            lineNumbers.innerHTML = Array.from({ length: lineCount }, (_, i) => `<div>${i + 1}</div>`).join('');
+            lineNumbers.scrollTop = editor.scrollTop;
+        }
+
+        function clearLog() {
+            const logContent = document.getElementById("logContent");
+            if (!logContent) return;
+            logContent.innerHTML = "";
+        }
+
+        function appendLog(message, type = "info") {
+            const logContent = document.getElementById("logContent");
+            if (!logContent) return;
+
+            const colorMap = {
+                info: "text-sky-400",
+                success: "text-emerald-400",
+                warning: "text-amber-400",
+                error: "text-rose-400"
+            };
+
+            const row = document.createElement("div");
+            row.className = `${colorMap[type] || "text-slate-400"} mb-1`;
+            row.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContent.appendChild(row);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        function setStatusText(text, type = "neutral") {
+            const statusText = document.getElementById("statusText");
+            if (!statusText) return;
+
+            const colorMap = {
+                neutral: "text-slate-400",
+                info: "text-sky-400",
+                success: "text-emerald-400",
+                warning: "text-amber-400",
+                error: "text-rose-400"
+            };
+
+            statusText.className = `text-xs font-mono ${colorMap[type] || "text-slate-400"}`;
+            statusText.textContent = text;
+        }
+
+        // ==========================================
+        // 本地缓存读写 (Draft & Cases & History)
+        // ==========================================
+        function saveDraft() {
+            const editor = document.getElementById('codeEditor');
+            if(editor) localStorage.setItem(`oj_draft_${currentProblemKey}_${currentLanguage}`, editor.value);
+        }
+
+        function loadDraft() {
+            const editor = document.getElementById('codeEditor');
+            if(!editor) return;
+            const draft = localStorage.getItem(`oj_draft_${currentProblemKey}_${currentLanguage}`);
+            const problem = PROBLEM_DATA[currentProblemKey];
+            editor.value = draft !== null ? draft : (problem && problem.templates ? problem.templates[currentLanguage] || '' : '');
+            updateLineNumbers();
+        }
+
+        function loadCases() {
+            const saved = safeJSONParse(localStorage.getItem(`oj_cases_${currentProblemKey}`), null);
+            if (saved && Array.isArray(saved) && saved.length > 0) return saved;
+            return deepClone(PROBLEM_DATA[currentProblemKey]?.defaultCases || []);
+        }
+
+        function saveCases(cases) {
+            localStorage.setItem(`oj_cases_${currentProblemKey}`, JSON.stringify(cases));
+        }
+
+        function getHistoryKey(problemKey = currentProblemKey) {
+            return `oj_history_${problemKey}`;
+        }
+
+        function renderLanguageDropdown() {
+            const sel = document.getElementById('languageSelect');
+            if(!sel) return;
+            const templates = PROBLEM_DATA[currentProblemKey]?.templates || {};
+            if(!templates[currentLanguage]) currentLanguage = Object.keys(templates)[0] || 'none';
+            sel.innerHTML = Object.keys(templates).map(k => `<option value="${k}" ${k===currentLanguage?'selected':''}>${k.toUpperCase()}</option>`).join('');
+        }
+
+        function renderProblemDropdown() {
+            const sel = document.getElementById('problemSelector');
+            if(!sel) return;
+            const keys = getWorkspaceProblemKeys();
+            sel.innerHTML = keys.map(k => `<option value="${k}" ${k===currentProblemKey?'selected':''}>No.${PROBLEM_DATA[k].id} ${escapeHtml(PROBLEM_DATA[k].title)}</option>`).join('');
+        }
+
+        function mapStateToDisplayLabel(state) {
+            const map = {
+                idle: "Idle",
+                running: "Running",
+                accepted: "Accepted",
+                wrong_answer: "Wrong Answer",
+                runtime_error: "Runtime Error",
+                compile_error: "Compile Error",
+                time_limit_exceeded: "Time Limit Exceeded"
+            };
+            return map[state] || state;
+        }
+
+        function setJudgeState(state, data = {}) {
+            const titleEl = document.getElementById("judgeTitle");
+            const dotEl = document.getElementById("statusDot");
+            const judgeMessage = document.getElementById("judgeMessage");
+            const metricCards = document.getElementById("metricCards");
+            const scoreDisplay = document.getElementById("scoreDisplay");
+
+            if (!titleEl || !dotEl || !judgeMessage || !metricCards || !scoreDisplay) return;
+
+            scoreDisplay.classList.add("hidden");
+            metricCards.replaceChildren();
+
+            const config = {
+                idle: {
+                    title: "等待操作",
+                    titleClass: "text-slate-400 font-bold text-lg",
+                    dotClass: "w-2 h-2 rounded-full bg-slate-600",
+                    message: "系统空闲。"
+                },
+                running: {
+                    title: data.title || "正在执行...",
+                    titleClass: "text-amber-400 font-bold text-lg animate-pulse",
+                    dotClass: "w-2 h-2 rounded-full bg-amber-400 animate-ping",
+                    message: data.message || "请求已发送..."
+                },
+                accepted: {
+                    title: data.title || "解答正确 (Accepted)",
+                    titleClass: "text-emerald-500 font-bold text-lg",
+                    dotClass: "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]",
+                    message: data.message || "执行完毕。"
+                },
+                wrong_answer: {
+                    title: data.title || "答案错误 (Wrong Answer)",
+                    titleClass: "text-amber-400 font-bold text-lg",
+                    dotClass: "w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]",
+                    message: data.message || "结果异常。"
+                },
+                runtime_error: {
+                    title: data.title || "运行时错误 (Runtime Error)",
+                    titleClass: "text-rose-400 font-bold text-lg",
+                    dotClass: "w-2 h-2 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.8)]",
+                    message: data.message || "执行中断。"
+                },
+                compile_error: {
+                    title: data.title || "编译错误 (Compile Error)",
+                    titleClass: "text-fuchsia-400 font-bold text-lg",
+                    dotClass: "w-2 h-2 rounded-full bg-fuchsia-400 shadow-[0_0_8px_rgba(232,121,249,0.8)]",
+                    message: data.message || "检查代码完整性。"
+                },
+                time_limit_exceeded: {
+                    title: data.title || "超出时间限制 (TLE)",
+                    titleClass: "text-orange-400 font-bold text-lg",
+                    dotClass: "w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.8)]",
+                    message: data.message || "运行超时终止。"
+                }
+            };
+
+            const current = config[state] || config.idle;
+            titleEl.innerText = current.title;
+            titleEl.className = current.titleClass;
+            dotEl.className = current.dotClass;
+            judgeMessage.innerHTML = sanitizeHTML(current.message);
+
+            if (data.metrics && data.metrics.length > 0) {
+                data.metrics.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = 'rounded-lg bg-slate-900/50 border border-slate-800 p-3';
+                    if (state === 'idle' || state === 'running') div.classList.add('opacity-50');
+                    div.innerHTML = `<div class="text-slate-500 text-xs mb-1">${escapeHtml(m.label)}</div><div class="font-mono ${m.color || 'text-slate-200'}">${escapeHtml(m.value)}</div>`;
+                    metricCards.appendChild(div);
+                });
+            }
+
+            if (state === 'accepted' && data.score !== undefined) {
+                scoreDisplay.textContent = `+${data.score} PTS`;
+                scoreDisplay.classList.remove('hidden');
+                scoreDisplay.classList.add('animate-bounce');
+                setTimeout(() => scoreDisplay.classList.remove('animate-bounce'), 1000);
+            }
+        }
+
+        function setBusyState(busy, mode = 'idle') {
+            isBusy = busy;
+
+            const problemSelector = document.getElementById('problemSelector');
+            const languageSelect = document.getElementById('languageSelect');
+            const runBtn = document.getElementById('runBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const loadingIcon = document.getElementById('loadingIcon');
+
+            if (problemSelector) problemSelector.disabled = busy;
+            if (languageSelect) languageSelect.disabled = busy;
+            if (runBtn) {
+                runBtn.disabled = busy;
+                runBtn.classList.toggle('opacity-60', busy);
+                runBtn.classList.toggle('cursor-not-allowed', busy);
+            }
+            if (submitBtn) {
+                submitBtn.disabled = busy;
+                submitBtn.classList.toggle('opacity-80', busy);
+                submitBtn.classList.toggle('cursor-not-allowed', busy);
+            }
+
+            if (submitBtn && btnText && loadingIcon) {
+                if (busy && mode === 'submit') {
+                    btnText.innerText = '执行中...';
+                    loadingIcon.classList.remove('hidden');
+                    submitBtn.classList.replace('bg-emerald-600', 'bg-amber-600');
+                    submitBtn.classList.replace('hover:bg-emerald-500', 'hover:bg-amber-500');
+                } else {
+                    btnText.innerText = '正式提交';
+                    loadingIcon.classList.add('hidden');
+                    submitBtn.classList.replace('bg-amber-600', 'bg-emerald-600');
+                    submitBtn.classList.replace('hover:bg-amber-500', 'hover:bg-emerald-500');
+                }
+            }
+        }
+
+        // ==========================================
+        // 配置与设置模块
+        // ==========================================
+        function getSavedProfile() {
+            return {
+                sysName: localStorage.getItem('oj_sys_name') || 'CodeEdu 教学平台',
+                userName: localStorage.getItem('oj_user_name') || '用户',
+                avatarText: localStorage.getItem('oj_avatar_text') || '用',
+                avatarColor: localStorage.getItem('oj_avatar_color') || 'bg-indigo-500'
+            };
+        }
+
+        function applyProfileToUI() {
+            const { sysName, userName, avatarText, avatarColor } = getSavedProfile();
+            const sysNameDisplay = document.getElementById('sysNameDisplay');
+            if (sysNameDisplay) sysNameDisplay.textContent = sysName;
+            document.title = `${sysName} - 测试版`;
+
+            const dashAvatarEl = document.getElementById('dashAvatar');
+            const dashNameEl = document.getElementById('dashName');
+            const wsAvatarEl = document.getElementById('wsAvatar');
+
+            if (currentRole === 'teacher') {
+                if (dashAvatarEl) {
+                    dashAvatarEl.textContent = '师';
+                    dashAvatarEl.className = 'w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center font-bold text-white shadow-md cursor-pointer hover:opacity-80 transition';
+                }
+                if (dashNameEl) dashNameEl.textContent = '管理员';
+                if (wsAvatarEl) {
+                    wsAvatarEl.textContent = '师';
+                    wsAvatarEl.className = 'w-6 h-6 rounded-full bg-rose-600 flex items-center justify-center font-bold text-white text-xs';
+                }
+            } else {
+                if (dashAvatarEl) {
+                    dashAvatarEl.textContent = avatarText;
+                    dashAvatarEl.className = `w-8 h-8 rounded-full ${avatarColor} flex items-center justify-center font-bold text-white shadow-md cursor-pointer hover:opacity-80 transition`;
+                }
+                if (dashNameEl) dashNameEl.textContent = userName;
+                if (wsAvatarEl) {
+                    wsAvatarEl.textContent = avatarText;
+                    wsAvatarEl.className = `w-6 h-6 rounded-full ${avatarColor} flex items-center justify-center font-bold text-white text-xs`;
+                }
+            }
+        }
+
+        function loadSystemSettings() {
+            applyProfileToUI();
+        }
+
+        function openSettingsModal() {
+            const { sysName, userName, avatarText, avatarColor } = getSavedProfile();
+            document.getElementById('settingSysName').value = sysName;
+            document.getElementById('settingUserName').value = userName;
+            document.getElementById('settingAvatarText').value = avatarText;
+            document.getElementById('settingAvatarColor').value = avatarColor;
+            showModal('settingsModal');
+        }
+
+        function closeSettingsModal() {
+            hideModal('settingsModal');
+        }
+
+        function saveSystemSettings() {
+            const nameInput = document.querySelector('#settingSysName');
+            const userInput = document.querySelector('#settingUserName');
+            const textInput = document.querySelector('#settingAvatarText');
+            const colorInput = document.querySelector('#settingAvatarColor');
+
+            const newSysName = nameInput ? (nameInput.value.trim() || 'CodeEdu 教学平台') : 'CodeEdu 教学平台';
+            const newUserName = userInput ? (userInput.value.trim() || '用户') : '用户';
+            const newAvatarText = textInput ? (textInput.value.trim() || newUserName.charAt(0)) : '用';
+            const newAvatarColor = colorInput ? colorInput.value : 'bg-indigo-500';
+
+            localStorage.setItem('oj_sys_name', newSysName);
+            localStorage.setItem('oj_user_name', newUserName);
+            localStorage.setItem('oj_avatar_text', newAvatarText.slice(0, 1));
+            localStorage.setItem('oj_avatar_color', newAvatarColor);
+
+            applyProfileToUI();
+            closeSettingsModal();
+        }
+
+        // ==========================================
+        // 数据加载与验证
+        // ==========================================
+        function validateProblemObject(problem) {
+            if (!problem || typeof problem !== 'object') throw new Error('题目结构无效');
+            if (!problem.id || !problem.title || !problem.difficulty || !problem.desc) throw new Error('题目缺少必填字段');
+            if (!Array.isArray(problem.tags)) problem.tags = [];
+            if (!Array.isArray(problem.examples)) problem.examples = [];
+            if (!Array.isArray(problem.constraints)) problem.constraints = [];
+            if (!Array.isArray(problem.inputParams)) problem.inputParams = [];
+            if (!Array.isArray(problem.defaultCases)) problem.defaultCases = [];
+            if (!problem.templates || typeof problem.templates !== 'object' || Array.isArray(problem.templates)) problem.templates = {};
+            if (!problem.answers || typeof problem.answers !== 'object' || Array.isArray(problem.answers)) problem.answers = {};
+            if (!problem.validKeywords || typeof problem.validKeywords !== 'object' || Array.isArray(problem.validKeywords)) problem.validKeywords = {};
+            if (!problem.score) problem.score = 100;
+            if (!problem.passRate) problem.passRate = '--';
+            return problem;
+        }
+
+        function loadStorageData() {
+            const customProblems = safeJSONParse(localStorage.getItem('oj_custom_problems'), {});
+            const validCustom = {};
+            Object.keys(customProblems).forEach(key => {
+                try { validCustom[key] = validateProblemObject(customProblems[key]); }
+                catch (e) {}
+            });
+            PROBLEM_DATA = { ...BASE_PROBLEM_DATA, ...validCustom };
+
+            CLASS_STUDENTS = safeJSONParse(localStorage.getItem('oj_class_students'), []);
+            if (!Array.isArray(CLASS_STUDENTS)) CLASS_STUDENTS = [];
+
+            CONTEST_DATA = safeJSONParse(localStorage.getItem('oj_contests'), []);
+            if (!Array.isArray(CONTEST_DATA)) CONTEST_DATA = [];
+            
+            renderProblemDropdown();
+        }
+
+        function persistCustomProblems(problemObj) {
+            localStorage.setItem('oj_custom_problems', JSON.stringify(problemObj));
+        }
+
+        function getCustomProblemsOnly() {
+            return safeJSONParse(localStorage.getItem('oj_custom_problems'), {});
+        }
+
+        function mergeProblemsIntoBank(parsedProblems) {
+            const customProblems = getCustomProblemsOnly();
+            const mergedCustom = { ...customProblems };
+
+            Object.keys(parsedProblems).forEach(key => {
+                mergedCustom[key] = validateProblemObject(parsedProblems[key]);
+            });
+
+            persistCustomProblems(mergedCustom);
+            PROBLEM_DATA = { ...BASE_PROBLEM_DATA, ...mergedCustom };
+            return Object.keys(parsedProblems);
+        }
+
+        // ==========================================
+        // 大厅交互与路由管理
+        // ==========================================
+        function changeRole(role) {
+            currentRole = role;
+            const teacherElements = document.querySelectorAll('.teacher-only');
+            if (role === 'teacher') {
+                teacherElements.forEach(el => el.classList.remove('view-hidden'));
+            } else {
+                teacherElements.forEach(el => el.classList.add('view-hidden'));
+                const classesTab = document.getElementById('tab-classes');
+                if (classesTab && !classesTab.classList.contains('view-hidden')) {
+                    switchDashboardTab('problems');
+                }
+            }
+            applyProfileToUI();
+        }
+
+        function switchDashboardTab(tabName) {
+            const tabs = ['problems', 'contests', 'classes'];
+            tabs.forEach(t => {
+                const tabEl = document.getElementById(`tab-${t}`);
+                const navBtn = document.getElementById(`nav-${t}`);
+                if (tabEl) tabEl.classList.toggle('view-hidden', t !== tabName);
+                if (navBtn) {
+                    navBtn.className = t === tabName
+                        ? "px-4 py-2 text-sm font-medium rounded-md text-indigo-600 bg-indigo-50 transition"
+                        : "px-4 py-2 text-sm font-medium rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition";
+                }
+            });
+        }
+
+        function updateProblemStats() {
+            const entries = Object.values(PROBLEM_DATA);
+            const easy = entries.filter(p => p.difficulty === '简单').length;
+            const medium = entries.filter(p => p.difficulty === '中等').length;
+            const hard = entries.filter(p => p.difficulty === '困难').length;
+
+            document.getElementById('stat-problem-total').textContent = entries.length;
+            document.getElementById('stat-problem-easy').textContent = easy;
+            document.getElementById('stat-problem-medium').textContent = medium;
+            document.getElementById('stat-problem-hard').textContent = hard;
+        }
+
+        function getSolvedStatus(problemKey) {
+            return loadSubmissionHistory(problemKey).some(item => item.status === 'Accepted');
+        }
+
+        function renderDashboardProblems() {
+            const tbody = document.getElementById('dashboardProblemList');
+            if (!tbody) return;
+
+            const keyword = (document.getElementById('dashboardSearchInput').value || '').trim().toLowerCase();
+            tbody.replaceChildren();
+
+            const entries = getProblemEntriesSorted().filter(([key, problem]) => {
+                const text = `${problem.id} ${problem.title} ${(problem.tags || []).join(' ')}`.toLowerCase();
+                return !keyword || text.includes(keyword);
+            });
+
+            if (entries.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="7" class="px-6 py-10 text-center text-slate-500">没有找到符合条件的题目。</td>`;
+                tbody.appendChild(tr);
+                return;
+            }
+
+            entries.forEach(([key, p]) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100 last:border-0";
+                const isAC = getSolvedStatus(key);
+                const statusHtml = isAC
+                    ? `<span class="text-emerald-500"><svg class="w-5 h-5 inline" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></span>`
+                    : `<span class="text-slate-300">-</span>`;
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4">${statusHtml}</td>
+                    <td class="px-6 py-4 text-slate-600 font-mono">No.${escapeHtml(p.id)}</td>
+                    <td class="px-6 py-4 font-medium text-slate-800 cursor-pointer hover:text-indigo-600" onclick="enterWorkspace('${key}')">${escapeHtml(p.title)}</td>
+                    <td class="px-6 py-4 text-slate-500">${escapeHtml((p.tags || []).join(' / '))}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 text-xs rounded-full ${getDifficultyClass(p.difficulty)}">${escapeHtml(p.difficulty)}</span></td>
+                    <td class="px-6 py-4 text-slate-600 font-mono">${p.score || 100}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="enterWorkspace('${key}')" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">去挑战</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updateProblemStats();
+        }
+
+        function renderContestList() {
+            const container = document.getElementById('contestListContainer');
+            if (!container) return;
+
+            container.replaceChildren();
+
+            if (!CONTEST_DATA.length) {
+                container.innerHTML = `<div class="col-span-1 md:col-span-2 p-8 text-center text-slate-500 bg-white rounded-xl border border-dashed border-slate-300">目前大厅暂无比赛 / 测验。</div>`;
+                return;
+            }
+
+            CONTEST_DATA.forEach(c => {
+                const div = document.createElement('div');
+                const isRunning = c.status === '进行中';
+                const isEnded = c.status === '已结束';
+                div.className = `bg-white border border-slate-200 rounded-xl shadow-sm p-6 ${isRunning ? 'hover:shadow-md transition' : ''} ${isEnded ? 'opacity-75' : ''}`;
+
+                const statusHtml = isRunning
+                    ? `<span class="px-3 py-1 text-xs font-semibold text-rose-700 bg-rose-100 rounded-full flex items-center gap-1 w-max"><span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>进行中</span>`
+                    : isEnded
+                        ? `<span class="px-3 py-1 text-xs font-semibold text-slate-600 bg-slate-200 rounded-full w-max">已结束</span>`
+                        : `<span class="px-3 py-1 text-xs font-semibold text-slate-600 bg-slate-100 rounded-full w-max">未开始</span>`;
+
+                const problemCount = Array.isArray(c.problemKeys) ? c.problemKeys.length : 0;
+                const previewTitles = (c.problemKeys || []).slice(0, 3).map(k => PROBLEM_DATA[k]?.title).filter(Boolean).join(' / ');
+
+                const actions = document.createElement('div');
+                actions.className = 'flex items-center gap-2 flex-wrap';
+
+                const enterBtn = document.createElement('button');
+                enterBtn.className = isEnded
+                    ? 'px-5 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-medium cursor-not-allowed'
+                    : 'px-5 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition';
+                enterBtn.textContent = isEnded ? '已结束' : '进入考场';
+                if (!isEnded) {
+                    enterBtn.onclick = () => enterContestWorkspace(c.id);
+                }
+                actions.appendChild(enterBtn);
+
+                if (currentRole === 'teacher') {
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'px-4 py-2 border border-indigo-300 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-50 transition';
+                    editBtn.textContent = '编辑组卷';
+                    editBtn.onclick = () => openContestBuilder(c.id);
+                    actions.appendChild(editBtn);
+                }
+
+                div.innerHTML = `
+                    <div class="flex items-center justify-between mb-4 gap-3">
+                        ${statusHtml}
+                        <span class="text-sm font-mono text-slate-500">${escapeHtml(c.time || '--')}</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">${escapeHtml(c.title)}</h3>
+                    <p class="text-sm text-slate-500 mb-3">${escapeHtml(c.desc || '')}</p>
+                    <div class="text-xs text-slate-500 mb-1">题目数：${problemCount} 题</div>
+                    <div class="text-xs text-slate-400 mb-6">预览：${escapeHtml(previewTitles || '暂无题目')}</div>
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <div class="text-sm text-slate-500">预计参与: ${c.count || 0} 人</div>
+                    </div>
+                `;
+                div.querySelector('.flex.items-center.justify-between.gap-3.flex-wrap')?.appendChild(actions);
+                container.appendChild(div);
+            });
+        }
+
+        function renderClassStudentList() {
+            const tbody = document.getElementById('classStudentList');
+            if (!tbody) return;
+
+            const total = CLASS_STUDENTS.length;
+            const totalAc = CLASS_STUDENTS.reduce((sum, s) => sum + (Number(s.ac) || 0), 0);
+            const avgAc = total === 0 ? 0 : (totalAc / total).toFixed(1);
+            const activeCount = CLASS_STUDENTS.filter(s => (Number(s.ac) || 0) > 0).length;
+            const activeRate = total === 0 ? 0 : Math.round((activeCount / total) * 100);
+
+            document.getElementById('stat-total-students').textContent = `${total} 人`;
+            document.getElementById('stat-avg-ac').textContent = `${avgAc} 题`;
+            document.getElementById('stat-active').textContent = `${activeRate}%`;
+
+            tbody.replaceChildren();
+
+            if (total === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="6" class="px-6 py-8 text-center text-slate-500">当前班级暂无数据，请点击上方“导入学生名单”录入。</td>`;
+                tbody.appendChild(tr);
+                return;
+            }
+
+            CLASS_STUDENTS.forEach((s, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100 last:border-0";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 text-slate-500 font-mono">${escapeHtml(s.id)}</td>
+                    <td class="px-6 py-4 font-medium text-slate-800 flex items-center gap-2">
+                        <div class="w-6 h-6 rounded bg-slate-200 flex items-center justify-center text-xs text-slate-600">${escapeHtml((s.name || '?').charAt(0))}</div>
+                        ${escapeHtml(s.name)}
+                    </td>
+                    <td class="px-6 py-4 font-bold text-indigo-600">${s.score || 0}</td>
+                    <td class="px-6 py-4 text-slate-600">${s.ac || 0}</td>
+                    <td class="px-6 py-4 text-slate-500 text-xs">${escapeHtml(s.last || '--')}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="removeStudent(${idx})" class="text-rose-600 hover:text-rose-800 font-medium text-sm">移除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function removeStudent(index) {
+            CLASS_STUDENTS.splice(index, 1);
+            localStorage.setItem('oj_class_students', JSON.stringify(CLASS_STUDENTS));
+            renderClassStudentList();
+        }
+
+        function exportClassGradesCSV() {
+            if (CLASS_STUDENTS.length === 0) {
+                alert("当前班级没有学生数据，无法导出。");
+                return;
+            }
+            let csvContent = "\uFEFF学号,姓名,总分,AC题数,最近活跃时间\n";
+            CLASS_STUDENTS.forEach(s => {
+                csvContent += `${s.id},${s.name},${s.score || 0},${s.ac || 0},${s.last || ''}\n`;
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "class_grade_report.csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showModal('exportModal');
+        }
+
+        function closeExportModal() {
+            hideModal('exportModal');
+        }
+
+        // ==========================================
+        // 比赛 / 考场上下文
+        // ==========================================
+        function getCurrentContest() {
+            return CONTEST_DATA.find(c => c.id === currentContestId) || null;
+        }
+
+        function getWorkspaceProblemKeys() {
+            const contest = getCurrentContest();
+            if (contest && Array.isArray(contest.problemKeys) && contest.problemKeys.length) {
+                return contest.problemKeys.filter(k => PROBLEM_DATA[k]);
+            }
+            return getProblemEntriesSorted().map(([key]) => key);
+        }
+
+        function updateWorkspaceContextBadge() {
+            const badge = document.getElementById('workspaceContextBadge');
+            const contest = getCurrentContest();
+            if (contest) {
+                badge.classList.remove('hidden');
+                badge.textContent = `当前考场：${contest.title}`;
+            } else {
+                badge.classList.add('hidden');
+                badge.textContent = '';
+            }
+        }
+
+        function enterContestWorkspace(contestId) {
+            const contest = CONTEST_DATA.find(c => c.id === contestId);
+            if (!contest) return;
+            const keys = (contest.problemKeys || []).filter(k => PROBLEM_DATA[k]);
+            if (!keys.length) {
+                alert('该比赛 / 测验尚未配置或题目已被删除。');
+                return;
+            }
+            currentContestId = contestId;
+            enterWorkspace(keys[0], true);
+        }
+
+        function enterWorkspace(problemKey, fromContest = false) {
+            if (!fromContest) currentContestId = null;
+
+            const vDash = document.getElementById('view-dashboard');
+            const vWork = document.getElementById('view-workspace');
+            if (vDash) vDash.classList.add('view-hidden');
+            if (vWork) vWork.classList.remove('view-hidden');
+
+            renderProblemDropdown();
+
+            const allowedKeys = getWorkspaceProblemKeys();
+            const targetKey = allowedKeys.includes(problemKey) ? problemKey : allowedKeys[0];
+            switchProblem(targetKey, false);
+
+            setTimeout(() => updateLineNumbers(), 100);
+            updateWorkspaceContextBadge();
+        }
+
+        function exitWorkspace() {
+            if (isBusy) {
+                alert("正在执行代码，请等待完成后退出。");
+                return;
+            }
+            currentContestId = null;
+            updateWorkspaceContextBadge();
+            const vDash = document.getElementById('view-dashboard');
+            const vWork = document.getElementById('view-workspace');
+            if (vWork) vWork.classList.add('view-hidden');
+            if (vDash) vDash.classList.remove('view-hidden');
+            renderDashboardProblems();
+            renderContestList();
+        }
+
+        // ==========================================
+        // 面板切换与状态更新
+        // ==========================================
+        function switchBottomTab(tab) {
+            const tabs = ["case", "result", "log", "history"];
+            tabs.forEach((t) => {
+                const panel = document.getElementById(`panel${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                const btn = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if (panel) panel.classList.toggle("hidden", t !== tab);
+                if (btn) {
+                    btn.className = t === tab
+                        ? "bottom-tab px-4 py-1.5 rounded-t-md bg-slate-800 text-white border-t border-l border-r border-slate-700 transition"
+                        : "bottom-tab px-4 py-1.5 rounded-t-md text-slate-400 hover:text-slate-200 border border-transparent transition";
+                }
+            });
+            if (tab === 'history') renderSubmissionHistory();
+        }
+
+        function renderProblemInfo() {
+            const problem = PROBLEM_DATA[currentProblemKey];
+            if (!problem) return;
+
+            const titleArea = document.getElementById("ui-title-area");
+            titleArea.replaceChildren();
+
+            const h1 = document.createElement('h1');
+            h1.className = 'text-2xl font-bold text-slate-900';
+            h1.textContent = `No.${problem.id} ${problem.title}`;
+
+            const badge = document.createElement('span');
+            badge.className = `px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyClass(problem.difficulty)}`;
+            badge.textContent = problem.difficulty;
+
+            titleArea.appendChild(h1);
+            titleArea.appendChild(badge);
+
+            const tagsArea = document.getElementById("ui-tags-area");
+            tagsArea.replaceChildren();
+            (problem.tags || []).forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300 cursor-pointer transition';
+                span.textContent = tag;
+                tagsArea.appendChild(span);
+            });
+
+            document.getElementById('ui-pass-rate').textContent = problem.passRate || '--';
+            document.getElementById('ui-score').textContent = problem.score || 100;
+
+            document.getElementById("ui-description").innerHTML = sanitizeHTML(problem.desc || '');
+
+            const examplesArea = document.getElementById("ui-examples");
+            examplesArea.replaceChildren();
+            (problem.examples || []).forEach(example => {
+                const wrap = document.createElement('div');
+                wrap.className = 'rounded-lg border border-slate-200 bg-white p-4 text-sm leading-6 font-mono text-slate-700 shadow-sm overflow-x-auto';
+                wrap.innerHTML = `
+                    <div><span class="font-bold text-slate-400">输入：</span>${escapeHtml(example.in)}</div>
+                    <div><span class="font-bold text-slate-400">输出：</span>${escapeHtml(example.out)}</div>
+                    ${example.exp ? `<div><span class="font-bold text-slate-400">解释：</span>${escapeHtml(example.exp)}</div>` : ""}
+                `;
+                examplesArea.appendChild(wrap);
+            });
+
+            const constraintsArea = document.getElementById("ui-constraints");
+            constraintsArea.replaceChildren();
+            (problem.constraints || []).forEach(item => {
+                const div = document.createElement('div');
+                div.textContent = item;
+                constraintsArea.appendChild(div);
+            });
+
+            const contest = getCurrentContest();
+            const sysName = localStorage.getItem('oj_sys_name') || 'CodeEdu 教学平台';
+            const contextText = contest ? `考场: ${contest.title}` : sysName;
+            document.title = `No.${problem.id} - ${contextText}`;
+        }
+
+        // ==========================================
+        // 历史与记录
+        // ==========================================
+        function saveSubmissionHistory(record) {
+            const list = loadSubmissionHistory(record.problemKey);
+            list.unshift(record);
+            localStorage.setItem(getHistoryKey(record.problemKey), JSON.stringify(list.slice(0, 20)));
+            if (record.problemKey === currentProblemKey) renderSubmissionHistory();
+        }
+
+        function loadSubmissionHistory(problemKey = currentProblemKey) {
+            return safeJSONParse(localStorage.getItem(getHistoryKey(problemKey)), []);
+        }
+
+        function clearSubmissionHistory() {
+            localStorage.removeItem(getHistoryKey());
+            renderSubmissionHistory();
+        }
+
+        function renderSubmissionHistory() {
+            const historyList = document.getElementById('historyList');
+            if (!historyList) return;
+            const list = loadSubmissionHistory();
+            historyList.replaceChildren();
+
+            if (!list.length) {
+                const empty = document.createElement('div');
+                empty.className = 'rounded-lg border border-dashed border-slate-800 bg-slate-900/40 p-4 text-sm text-slate-500';
+                empty.textContent = '暂无执行记录。';
+                historyList.appendChild(empty);
+                return;
+            }
+
+            list.forEach(item => {
+                const statusColor = {
+                    'Accepted': 'text-emerald-400 border-emerald-800/50 bg-emerald-950/20',
+                    'Wrong Answer': 'text-amber-300 border-amber-800/50 bg-amber-950/20',
+                    'Runtime Error': 'text-rose-300 border-rose-800/50 bg-rose-950/20',
+                    'Compile Error': 'text-fuchsia-300 border-fuchsia-800/50 bg-fuchsia-950/20',
+                    'Time Limit Exceeded': 'text-orange-300 border-orange-800/50 bg-orange-950/20'
+                }[item.status] || 'text-slate-300 border-slate-700 bg-slate-900/40';
+
+                const card = document.createElement('div');
+                card.className = 'rounded-xl border border-slate-800 bg-slate-900/50 p-4 mb-3';
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                                ${escapeHtml(item.problemTitle)}
+                                ${item.score ? `<span class="text-xs text-emerald-400 bg-emerald-900/30 px-1 rounded">+${item.score}分</span>` : ''}
+                            </div>
+                            <div class="text-xs text-slate-500 mt-1">${escapeHtml(item.timeLabel)} · ${escapeHtml(item.languageLabel)} · ${escapeHtml(item.mode)}</div>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded border ${statusColor}">${escapeHtml(item.status)}</span>
+                    </div>
+                `;
+
+                if (item.metrics && item.metrics.length) {
+                    const grid = document.createElement('div');
+                    grid.className = 'grid grid-cols-2 md:grid-cols-4 gap-2 text-xs mb-3';
+                    item.metrics.forEach(m => {
+                        const box = document.createElement('div');
+                        box.className = 'rounded bg-slate-950/60 border border-slate-800 px-3 py-2';
+                        box.innerHTML = `<span class="text-slate-400">${escapeHtml(m.label)} </span><span class="font-mono ${m.color || 'text-slate-200'}">${escapeHtml(m.value)}</span>`;
+                        grid.appendChild(box);
+                    });
+                    card.appendChild(grid);
+                }
+
+                if (item.summary) {
+                    const summary = document.createElement('div');
+                    summary.className = 'text-xs text-slate-500 leading-6';
+                    summary.textContent = item.summary;
+                    card.appendChild(summary);
+                }
+
+                historyList.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // 测试用例编辑
+        // ==========================================
+        function createCaseInput(labelText, key, value) {
+            const wrap = document.createElement('div');
+            const label = document.createElement('label');
+            label.className = 'text-xs text-slate-500 mb-1 block';
+            label.textContent = `${labelText} =`;
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'case-input w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-slate-300 outline-none focus:border-indigo-500 transition';
+            input.setAttribute('data-key', key);
+            input.value = value || '';
+
+            wrap.appendChild(label);
+            wrap.appendChild(input);
+            return wrap;
+        }
+
+        function renderCaseTabs() {
+            const cases = loadCases();
+            const caseTabsContainer = document.getElementById('caseTabs');
+            if (!caseTabsContainer) return;
+
+            caseTabsContainer.innerHTML = '';
+            cases.forEach((_, index) => {
+                const btn = document.createElement('button');
+                btn.textContent = `Case ${index + 1}`;
+                btn.className = index === currentCaseIndex
+                    ? 'px-3 py-1 bg-slate-800 text-slate-200 text-xs rounded border border-slate-600'
+                    : 'px-3 py-1 bg-transparent text-slate-400 text-xs rounded border border-transparent hover:bg-slate-800';
+                btn.onclick = () => {
+                    if (isBusy) return;
+                    saveCurrentCaseFromInputs();
+                    currentCaseIndex = index;
+                    renderCaseTabs();
+                    renderCaseInputs();
+                };
+                caseTabsContainer.appendChild(btn);
+            });
+        }
+
+        function renderCaseInputs() {
+            const problem = PROBLEM_DATA[currentProblemKey];
+            const cases = loadCases();
+            const currentCase = cases[currentCaseIndex] || {};
+            const dynamicCaseInputs = document.getElementById('dynamicCaseInputs');
+            if (!dynamicCaseInputs) return;
+
+            dynamicCaseInputs.innerHTML = '';
+            (problem.inputParams || []).forEach(param => {
+                dynamicCaseInputs.appendChild(createCaseInput(param, param, currentCase[param]));
+            });
+            dynamicCaseInputs.appendChild(createCaseInput('期望输出', 'expected', currentCase.expected));
+
+            document.querySelectorAll('.case-input').forEach(input => {
+                input.addEventListener('input', saveCurrentCaseFromInputs);
+            });
+        }
+
+        function saveCurrentCaseFromInputs() {
+            const cases = loadCases();
+            const inputs = document.querySelectorAll('.case-input');
+            const updated = {};
+            inputs.forEach(input => {
+                updated[input.getAttribute('data-key')] = input.value;
+            });
+            cases[currentCaseIndex] = updated;
+            saveCases(cases);
+        }
+
+        function addCase() {
+            if (isBusy) return;
+            saveCurrentCaseFromInputs();
+
+            const problem = PROBLEM_DATA[currentProblemKey];
+            const cases = loadCases();
+            const newCase = { expected: '?' };
+            (problem.inputParams || []).forEach(p => newCase[p] = '?');
+            cases.push(newCase);
+            saveCases(cases);
+
+            currentCaseIndex = cases.length - 1;
+            renderCaseTabs();
+            renderCaseInputs();
+            appendLog('已新增一个测试用例。', 'info');
+        }
+
+        function deleteCurrentCase() {
+            if (isBusy) return;
+            const cases = loadCases();
+            if (cases.length <= 1) {
+                appendLog('至少保留一个测试用例。', 'warning');
+                return;
+            }
+            cases.splice(currentCaseIndex, 1);
+            currentCaseIndex = Math.max(0, currentCaseIndex - 1);
+            saveCases(cases);
+            renderCaseTabs();
+            renderCaseInputs();
+            appendLog('已删除当前测试用例。', 'warning');
+        }
+
+        function resetCases() {
+            if (isBusy) return;
+            saveCases(deepClone(PROBLEM_DATA[currentProblemKey].defaultCases));
+            currentCaseIndex = 0;
+            renderCaseTabs();
+            renderCaseInputs();
+            appendLog('已恢复默认用例。', 'warning');
+        }
+
+        function resetCode() {
+            if (isBusy) return;
+            const problem = PROBLEM_DATA[currentProblemKey];
+            const editor = document.getElementById("codeEditor");
+            if (editor) editor.value = problem.templates[currentLanguage] || "";
+            saveDraft();
+            updateLineNumbers();
+            switchBottomTab("case");
+            appendLog('已还原代码模板。', 'warning');
+            setStatusText('Ready.', 'neutral');
+            setJudgeState("idle");
+        }
+
+        function fillDemoAnswer() {
+            if (isBusy) return;
+            const problem = PROBLEM_DATA[currentProblemKey];
+            const answer = (problem.answers && problem.answers[currentLanguage]) ? problem.answers[currentLanguage] : null;
+            if (!answer) {
+                appendLog('暂无当前语言的演示代码。', 'warning');
+                setStatusText('暂无演示代码', 'warning');
+                return;
+            }
+            const editor = document.getElementById("codeEditor");
+            if (editor) editor.value = answer;
+            saveDraft();
+            updateLineNumbers();
+            appendLog('已填入演示代码。', 'success');
+            setStatusText('已填入演示', 'info');
+        }
+
+        function switchLanguage() {
+            const languageSelect = document.getElementById("languageSelect");
+            if (!languageSelect) return;
+            if (isBusy) {
+                languageSelect.value = currentLanguage;
+                appendLog('当前正在执行，无法切换语言。', 'warning');
+                return;
+            }
+            activeRequestId++;
+            currentLanguage = languageSelect.value;
+            localStorage.setItem('oj_last_language', currentLanguage);
+            loadDraft();
+            setJudgeState("idle");
+            appendLog(`已切换至 ${languageSelect.options[languageSelect.selectedIndex].text}`, "info");
+            setStatusText(`${languageSelect.options[languageSelect.selectedIndex].text}`, 'info');
+        }
+
+        function switchProblem(problemKey, isInit = false) {
+            if (isBusy && !isInit) {
+                const sel = document.getElementById("problemSelector");
+                if (sel) sel.value = currentProblemKey;
+                appendLog('当前正在执行，无法切换题目。', 'warning');
+                return;
+            }
+            activeRequestId++;
+            currentProblemKey = problemKey;
+            localStorage.setItem('oj_last_problem', problemKey);
+            currentCaseIndex = 0;
+            
+            const sel = document.getElementById("problemSelector");
+            if (sel) sel.value = problemKey;
+            
+            renderLanguageDropdown();
+            renderProblemInfo();
+            loadDraft();
+            renderCaseTabs();
+            renderCaseInputs();
+            renderSubmissionHistory();
+            setJudgeState("idle");
+            switchBottomTab("case");
+            
+            if (!isInit) {
+                clearLog();
+                const p = PROBLEM_DATA[currentProblemKey];
+                if (p) {
+                    appendLog(`已切换至：No.${p.id} ${p.title}`, "info");
+                }
+                setStatusText('Ready.', 'neutral');
+            }
+        }
+
+        // ==========================================
+        // Mock 判题执行引擎 (模拟沙箱测试)
+        // ==========================================
+        function getExecutionSnapshot() {
+            const cases = loadCases();
+            const problem = PROBLEM_DATA[currentProblemKey];
+            const languageSelect = document.getElementById("languageSelect");
+            const editor = document.getElementById("codeEditor");
+            
+            return {
+                requestId: ++activeRequestId,
+                problemKey: currentProblemKey,
+                problemId: problem.id,
+                problemTitle: `No.${problem.id} ${problem.title}`,
+                language: currentLanguage,
+                languageLabel: languageSelect ? languageSelect.options[languageSelect.selectedIndex].text : currentLanguage,
+                caseIndex: currentCaseIndex,
+                code: editor ? editor.value : '',
+                caseData: JSON.parse(JSON.stringify(cases[currentCaseIndex] || {})),
+                allCases: JSON.parse(JSON.stringify(cases)),
+                score: problem.score || 100
+            };
+        }
+
+        function checkAnswerMockByCode(codeText, language, problemKey, mode = 'run') {
+            const problem = PROBLEM_DATA[problemKey];
+            const code = codeText.toLowerCase();
+            const keywords = (problem.validKeywords && problem.validKeywords[language]) ? problem.validKeywords[language] :[];
+            
+            // 简单校验：只要命中解题关键字就认为通过
+            if (keywords.length > 0 && keywords.every(k => code.includes(k.toLowerCase()))) return true;
+            
+            // 如果仅是运行测试，代码有一定修改量也算通过
+            if (mode === 'run') {
+                return code.length > (problem.templates[language] || '').length + 10;
+            }
+            return false;
+        }
+
+        const mockApi = {
+            runSample(snapshot) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const problem = PROBLEM_DATA[snapshot.problemKey];
+                        const codeLower = snapshot.code.toLowerCase();
+                        const template = problem.templates[snapshot.language] || '';
+                        
+                        if (!snapshot.code.trim() || snapshot.code.trim() === template.trim()) {
+                            resolve({ state: 'compile_error', metrics:[], summary: '代码未修改。', message: '请在模板基础上编写您的逻辑。' });
+                            return;
+                        }
+                        if (codeLower.includes('raise') || codeLower.includes('throw') || codeLower.includes('error')) {
+                            resolve({ state: 'runtime_error', metrics:[], summary: '发生异常中止。', message: '程序在执行时崩溃，抛出了未捕获的异常。' });
+                            return;
+                        }
+                        if (codeLower.includes('while true') || codeLower.includes('while(true)') || codeLower.includes('while (true)') || codeLower.includes('while(1)') || codeLower.includes('for(;;)')) {
+                            resolve({ state: 'time_limit_exceeded', metrics:[{label: '执行用时', value: '>2000ms', color: 'text-orange-400'}], summary: '程序执行超时。', message: '系统检测到可能的死循环或高复杂度计算，被强制阻断。' });
+                            return;
+                        }
+                        
+                        const isOK = checkAnswerMockByCode(snapshot.code, snapshot.language, snapshot.problemKey, 'run');
+                        if (isOK) {
+                            const inputString = (problem.inputParams || []).map(p => `${p}=${snapshot.caseData[p]}`).join(', ');
+                            resolve({ 
+                                state: 'accepted', 
+                                metrics:[{label: '执行用时', value: '2ms'}, {label: '内存消耗', value: '14.8MB'}, {label: '通过测试点', value: '1/1', color: 'text-emerald-400'}],
+                                summary: '当前用例顺利通过。',
+                                message: `✅ 逻辑执行完毕，与期望输出匹配。<br>输入: ${escapeHtml(inputString)}<br>输出: ${escapeHtml(snapshot.caseData.expected)}` 
+                            });
+                        } else {
+                            resolve({ 
+                                state: 'wrong_answer', 
+                                metrics:[{label: '执行用时', value: '1ms'}, {label: '内存消耗', value: '14.8MB'}, {label: '通过测试点', value: '0/1'}],
+                                summary: '计算结果错误。',
+                                message: '程序输出的结果与期望输出 <strong>' + escapeHtml(snapshot.caseData.expected) + '</strong> 不匹配，请检查代码逻辑。' 
+                            });
+                        }
+                    }, 650);
+                });
+            },
+            
+            submitCode(snapshot) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const problem = PROBLEM_DATA[snapshot.problemKey];
+                        const codeLower = snapshot.code.toLowerCase();
+                        const template = problem.templates[snapshot.language] || '';
+                        
+                        if (!snapshot.code.trim() || snapshot.code.trim() === template.trim()) {
+                            resolve({ state: 'compile_error', metrics:[], summary: '代码为空白。', message: '您还没有编写任何代码逻辑。' });
+                            return;
+                        }
+                        if (codeLower.includes('raise') || codeLower.includes('throw')) {
+                            resolve({ state: 'runtime_error', metrics:[], summary: '沙箱内程序崩溃。', message: '在执行后台随机生成的隐藏测试数据时，程序发生了内存越界或崩溃。' });
+                            return;
+                        }
+                        if (codeLower.includes('while true') || codeLower.includes('while(true)') || codeLower.includes('while (true)') || codeLower.includes('while(1)') || codeLower.includes('for(;;)')) {
+                            resolve({ state: 'time_limit_exceeded', metrics:[{label: '执行用时', value: '>1000ms', color: 'text-orange-400'}, {label: '通过测试点', value: '7/54'}], summary: '大规模数据测试超时。', message: '您的算法时间复杂度过高，未能在 1000ms 的时限内通过压力测试用例。' });
+                            return;
+                        }
+                        
+                        const isOK = checkAnswerMockByCode(snapshot.code, snapshot.language, snapshot.problemKey, 'submit');
+                        if (isOK) {
+                            const runtime = Math.floor(Math.random() * 20 + 10) + 'ms';
+                            const mem = (Math.random() * 5 + 12).toFixed(1) + 'MB';
+                            resolve({ 
+                                state: 'accepted', score: snapshot.score,
+                                metrics:[{label: '执行用时', value: runtime}, {label: '内存消耗', value: mem}, {label: '通过测试点', value: '54/54', color: 'text-emerald-400'}, {label: '击败', value: '88.6%'}],
+                                summary: '成功攻克本题！',
+                                message: `🎉 太棒了！你的代码通过了后台全部隐藏测试用例，并成功拿到了本题满分 <strong>${snapshot.score}</strong> 分！` 
+                            });
+                        } else {
+                            resolve({ 
+                                state: 'wrong_answer', 
+                                metrics:[{label: '执行用时', value: '12ms'}, {label: '内存消耗', value: '15.9MB'}, {label: '通过测试点', value: '13/54'}],
+                                summary: '未考虑全边界情况。',
+                                message: '解答在第 14 个隐藏测试用例 (超大边界值) 处发生了结果不一致的错误。' 
+                            });
+                        }
+                    }, 1500);
+                });
+            }
+        };
+
+        async function runCode() {
+            if (isBusy) return;
+            saveCurrentCaseFromInputs();
+            const snapshot = getExecutionSnapshot();
+            
+            if (snapshot.language === 'none') {
+                appendLog('无可用的编译器环境。', 'error');
+                return;
+            }
+
+            setBusyState(true, 'run');
+            switchBottomTab('result');
+            setJudgeState('running', { message: '正在为您启动隔离的 WebAssembly 沙箱执行环境...' });
+            setStatusText('Executing...', 'warning');
+            
+            const result = await mockApi.runSample(snapshot);
+            
+            if (snapshot.requestId !== activeRequestId) {
+                setBusyState(false);
+                return;
+            }
+            
+            setJudgeState(result.state, { metrics: result.metrics, message: result.message });
+            appendLog(`示例测试完毕。返回状态: ${mapStateToDisplayLabel(result.state)}`, result.state === 'accepted' ? 'success' : 'error');
+            setStatusText(mapStateToDisplayLabel(result.state), result.state === 'accepted' ? 'success' : 'error');
+            
+            saveSubmissionHistory({ 
+                problemKey: snapshot.problemKey, problemTitle: snapshot.problemTitle, languageLabel: snapshot.languageLabel, 
+                mode: '运行调试', status: mapStateToDisplayLabel(result.state), metrics: result.metrics, 
+                summary: result.summary, codeLength: snapshot.code.length, timeLabel: new Date().toLocaleTimeString() 
+            });
+            setBusyState(false);
+        }
+
+        async function submitCode() {
+            if (isBusy) return;
+            saveCurrentCaseFromInputs();
+            const snapshot = getExecutionSnapshot();
+            
+            if (snapshot.language === 'none') {
+                appendLog('无可用的编译器环境。', 'error');
+                return;
+            }
+
+            setBusyState(true, 'submit');
+            switchBottomTab('result');
+            setJudgeState('running', { message: '您的代码已进入云端评测队列，正在载入全部判题数据集...' });
+            appendLog(`将代码提交至中心判题引擎，请稍候...`, 'info');
+            setStatusText('Judging in progress...', 'warning');
+            
+            const result = await mockApi.submitCode(snapshot);
+            
+            if (snapshot.requestId !== activeRequestId) {
+                setBusyState(false);
+                return;
+            }
+            
+            setJudgeState(result.state, { metrics: result.metrics, message: result.message, score: result.score });
+            appendLog(`正式评测结束。返回状态: ${mapStateToDisplayLabel(result.state)}`, result.state === 'accepted' ? 'success' : 'error');
+            setStatusText(mapStateToDisplayLabel(result.state), result.state === 'accepted' ? 'success' : 'error');
+            
+            const finalScore = result.state === 'accepted' ? result.score : 0;
+            saveSubmissionHistory({ 
+                problemKey: snapshot.problemKey, problemTitle: snapshot.problemTitle, languageLabel: snapshot.languageLabel, 
+                mode: '正式提交', status: mapStateToDisplayLabel(result.state), metrics: result.metrics, 
+                summary: result.summary, score: finalScore, codeLength: snapshot.code.length, timeLabel: new Date().toLocaleTimeString() 
+            });
+            setBusyState(false);
+            
+            // 如果 AC 了，刷新一下外部表格状态（假装后端存储了这名学生的成绩）
+            if (result.state === 'accepted') {
+                let currentUser = localStorage.getItem('oj_user_name') || '用户';
+                let student = CLASS_STUDENTS.find(s => s.name === currentUser);
+                if(student) {
+                    student.ac = (Number(student.ac) || 0) + 1;
+                    student.score = (Number(student.score) || 0) + finalScore;
+                    student.last = "刚刚";
+                    localStorage.setItem('oj_class_students', JSON.stringify(CLASS_STUDENTS));
+                }
+                renderDashboardProblems(); 
+                renderClassStudentList();
+            }
+        }
+
+        // ==========================================
+        // 班级管理优化功能
+        // ==========================================
+        
+        // 多班级管理
+        let CLASSES_DATA = safeJSONParse(localStorage.getItem('oj_classes_data'), {
+            'default': {
+                id: 'default',
+                name: '默认班级',
+                description: '系统默认班级',
+                students: CLASS_STUDENTS,
+                createdAt: new Date().toISOString()
+            }
+        });
+        
+        let currentClassId = 'default';
+        let selectedStudents = new Set();
+        let studentPage = 1;
+        const studentsPerPage = 10;
+
+        // 班级管理模态框
+        function openClassManagerModal() {
+            renderClassManagerModal();
+            showModal('classManagerModal');
+        }
+
+        function closeClassManagerModal() {
+            hideModal('classManagerModal');
+        }
+
+        function renderClassManagerModal() {
+            const container = document.getElementById('classManagerContent');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-slate-800">班级管理</h3>
+                        <button onclick="createNewClass()" class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">新建班级</button>
+                    </div>
+                    
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                        <div class="text-sm font-medium text-slate-700 mb-2">班级列表</div>
+                        <div class="space-y-2 max-h-60 overflow-y-auto" id="classListContainer"></div>
+                    </div>
+                    
+                    <div id="classEditForm" class="hidden space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">班级名称</label>
+                            <input type="text" id="classNameInput" class="w-full border border-slate-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">班级描述</label>
+                            <textarea id="classDescInput" rows="3" class="w-full border border-slate-300 rounded px-3 py-2 text-sm"></textarea>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="saveClass()" class="px-3 py-1.5 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 transition">保存</button>
+                            <button onclick="cancelEditClass()" class="px-3 py-1.5 bg-slate-300 text-slate-700 text-sm rounded hover:bg-slate-400 transition">取消</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            renderClassList();
+        }
+
+        function renderClassList() {
+            const container = document.getElementById('classListContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            Object.values(CLASSES_DATA).forEach(cls => {
+                const isCurrent = cls.id === currentClassId;
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between p-3 rounded border ${isCurrent ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white'}`;
+                div.innerHTML = `
+                    <div class="min-w-0">
+                        <div class="font-medium text-slate-800 truncate">${escapeHtml(cls.name)}</div>
+                        <div class="text-xs text-slate-500 mt-1">${cls.students?.length || 0} 名学生</div>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        ${!isCurrent ? `<button onclick="switchClass('${cls.id}')" class="px-2 py-1 text-xs text-slate-600 hover:text-slate-800">切换</button>` : ''}
+                        <button onclick="editClass('${cls.id}')" class="px-2 py-1 text-xs text-slate-600 hover:text-slate-800">编辑</button>
+                        ${cls.id !== 'default' ? `<button onclick="deleteClass('${cls.id}')" class="px-2 py-1 text-xs text-rose-600 hover:text-rose-800">删除</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function createNewClass() {
+            document.getElementById('classEditForm').classList.remove('hidden');
+            document.getElementById('classNameInput').value = '';
+            document.getElementById('classDescInput').value = '';
+            document.getElementById('classEditForm').dataset.editId = 'new';
+        }
+
+        function editClass(classId) {
+            const cls = CLASSES_DATA[classId];
+            if (!cls) return;
+            
+            document.getElementById('classEditForm').classList.remove('hidden');
+            document.getElementById('classNameInput').value = cls.name || '';
+            document.getElementById('classDescInput').value = cls.description || '';
+            document.getElementById('classEditForm').dataset.editId = classId;
+        }
+
+        function cancelEditClass() {
+            document.getElementById('classEditForm').classList.add('hidden');
+        }
+
+        function saveClass() {
+            const editId = document.getElementById('classEditForm').dataset.editId;
+            const name = document.getElementById('classNameInput').value.trim();
+            const desc = document.getElementById('classDescInput').value.trim();
+            
+            if (!name) {
+                alert('请输入班级名称');
+                return;
+            }
+            
+            if (editId === 'new') {
+                const newId = 'class_' + Date.now();
+                CLASSES_DATA[newId] = {
+                    id: newId,
+                    name,
+                    description: desc,
+                    students: [],
+                    createdAt: new Date().toISOString()
+                };
+            } else {
+                if (CLASSES_DATA[editId]) {
+                    CLASSES_DATA[editId].name = name;
+                    CLASSES_DATA[editId].description = desc;
+                }
+            }
+            
+            localStorage.setItem('oj_classes_data', JSON.stringify(CLASSES_DATA));
+            renderClassList();
+            cancelEditClass();
+            updateClassSelector();
+        }
+
+        function deleteClass(classId) {
+            if (!confirm('确定要删除这个班级吗？此操作不可恢复。')) return;
+            
+            if (currentClassId === classId) {
+                currentClassId = 'default';
+                switchClass('default');
+            }
+            
+            delete CLASSES_DATA[classId];
+            localStorage.setItem('oj_classes_data', JSON.stringify(CLASSES_DATA));
+            renderClassList();
+            updateClassSelector();
+        }
+
+        function updateClassSelector() {
+            const selector = document.getElementById('classSelector');
+            if (!selector) return;
+            
+            selector.innerHTML = Object.values(CLASSES_DATA).map(cls => 
+                `<option value="${cls.id}" ${cls.id === currentClassId ? 'selected' : ''}>${escapeHtml(cls.name)}</option>`
+            ).join('');
+        }
+
+        function switchClass(classId) {
+            currentClassId = classId;
+            const cls = CLASSES_DATA[classId];
+            if (cls) {
+                CLASS_STUDENTS = cls.students || [];
+                localStorage.setItem('oj_class_students', JSON.stringify(CLASS_STUDENTS));
+            }
+            
+            updateClassSelector();
+            renderClassStudentList();
+            updateClassStats();
+            closeClassManagerModal();
+        }
+
+        // 学生批量操作
+        function toggleAllStudents(checked) {
+            const currentStudents = getCurrentPageStudents();
+            if (checked) {
+                currentStudents.forEach(s => selectedStudents.add(s.id));
+            } else {
+                selectedStudents.clear();
+            }
+            updateStudentSelectionUI();
+        }
+
+        function selectAllStudents() {
+            const currentStudents = getCurrentPageStudents();
+            currentStudents.forEach(s => selectedStudents.add(s.id));
+            updateStudentSelectionUI();
+        }
+
+        function clearStudentSelection() {
+            selectedStudents.clear();
+            updateStudentSelectionUI();
+        }
+
+        function batchRemoveStudents() {
+            if (selectedStudents.size === 0) {
+                alert('请先选择要移除的学生');
+                return;
+            }
+            
+            if (!confirm(`确定要移除选中的 ${selectedStudents.size} 名学生吗？`)) return;
+            
+            CLASS_STUDENTS = CLASS_STUDENTS.filter(s => !selectedStudents.has(s.id));
+            
+            // 更新当前班级数据
+            if (CLASSES_DATA[currentClassId]) {
+                CLASSES_DATA[currentClassId].students = CLASS_STUDENTS;
+                localStorage.setItem('oj_classes_data', JSON.stringify(CLASSES_DATA));
+            }
+            
+            localStorage.setItem('oj_class_students', JSON.stringify(CLASS_STUDENTS));
+            selectedStudents.clear();
+            renderClassStudentList();
+            updateClassStats();
+        }
+
+        function getCurrentPageStudents() {
+            const start = (studentPage - 1) * studentsPerPage;
+            const end = start + studentsPerPage;
+            return CLASS_STUDENTS.slice(start, end);
+        }
+
+        function updateStudentSelectionUI() {
+            // 更新全选复选框
+            const selectAllCheckbox = document.getElementById('selectAllStudents');
+            if (selectAllCheckbox) {
+                const currentStudents = getCurrentPageStudents();
+                selectAllCheckbox.checked = currentStudents.length > 0 && 
+                    currentStudents.every(s => selectedStudents.has(s.id));
+                selectAllCheckbox.indeterminate = currentStudents.some(s => selectedStudents.has(s.id)) && 
+                    !currentStudents.every(s => selectedStudents.has(s.id));
+            }
+            
+            // 更新选中计数
+            const selectedCount = document.getElementById('selectedCount');
+            if (selectedCount) {
+                selectedCount.textContent = `已选择 ${selectedStudents.size} 名学生`;
+            }
+        }
+
+        function previousStudentPage() {
+            if (studentPage > 1) {
+                studentPage--;
+                renderClassStudentList();
+            }
+        }
+
+        function nextStudentPage() {
+            const totalPages = Math.ceil(CLASS_STUDENTS.length / studentsPerPage);
+            if (studentPage < totalPages) {
+                studentPage++;
+                renderClassStudentList();
+            }
+        }
+
+        function updateClassStats() {
+            const cls = CLASSES_DATA[currentClassId];
+            if (!cls) return;
+            
+            const students = cls.students || [];
+            const total = students.length;
+            const totalAc = students.reduce((sum, s) => sum + (Number(s.ac) || 0), 0);
+            const avgAc = total === 0 ? 0 : (totalAc / total).toFixed(1);
+            const activeCount = students.filter(s => (Number(s.ac) || 0) > 0).length;
+            const activeRate = total === 0 ? 0 : Math.round((activeCount / total) * 100);
+            const avgScore = total === 0 ? 0 : Math.round(students.reduce((sum, s) => sum + (Number(s.score) || 0), 0) / total);
+            const maxScore = total === 0 ? 0 : Math.max(...students.map(s => Number(s.score) || 0));
+            
+            document.getElementById('stat-total-students').textContent = `${total} 人`;
+            document.getElementById('stat-avg-ac').textContent = `${avgAc} 题`;
+            document.getElementById('stat-active').textContent = `${activeRate}%`;
+            document.getElementById('stat-avg-score').textContent = avgScore;
+            
+            document.getElementById('currentClassInfo').textContent = `${total} 名学生`;
+            document.getElementById('currentClassStats').textContent = `平均分: ${avgScore}`;
+            
+            // 更新分页信息
+            const totalPages = Math.ceil(total / studentsPerPage);
+            document.getElementById('studentPageInfo').textContent = `第 ${studentPage} 页，共 ${totalPages} 页`;
+            document.getElementById('prevPageBtn').disabled = studentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = studentPage >= totalPages;
+            
+            // 更新图表
+            updateScoreChart();
+            updateActivityChart();
+        }
+
+        // 图表功能
+        function updateScoreChart() {
+            const container = document.getElementById('scoreDistributionChart');
+            if (!container) return;
+            
+            const students = CLASSES_DATA[currentClassId]?.students || [];
+            if (students.length === 0) {
+                container.innerHTML = '<div class="text-slate-400 text-sm">暂无成绩数据</div>';
+                return;
+            }
+            
+            // 简单模拟成绩分布
+            const scores = students.map(s => Number(s.score) || 0);
+            const scoreRanges = [
+                { range: '0-59', count: 0 },
+                { range: '60-69', count: 0 },
+                { range: '70-79', count: 0 },
+                { range: '80-89', count: 0 },
+                { range: '90-100', count: 0 }
+            ];
+            
+            scores.forEach(score => {
+                if (score < 60) scoreRanges[0].count++;
+                else if (score < 70) scoreRanges[1].count++;
+                else if (score < 80) scoreRanges[2].count++;
+                else if (score < 90) scoreRanges[3].count++;
+                else scoreRanges[4].count++;
+            });
+            
+            const maxCount = Math.max(...scoreRanges.map(r => r.count));
+            const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
+            
+            container.innerHTML = `
+                <div class="w-full h-full flex items-end justify-center gap-2">
+                    ${scoreRanges.map((r, i) => `
+                        <div class="flex flex-col items-center" style="height: 100%">
+                            <div class="text-xs text-slate-500 mb-1">${r.range}</div>
+                            <div class="w-8 rounded-t-lg transition-all duration-500" 
+                                 style="height: ${r.count === 0 ? '5px' : (r.count / maxCount * 90 + 10) + '%'}; 
+                                        background-color: ${colors[i]}"></div>
+                            <div class="text-xs font-medium mt-1">${r.count}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function updateActivityChart() {
+            const container = document.getElementById('activityTrendChart');
+            if (!container) return;
+            
+            const students = CLASSES_DATA[currentClassId]?.students || [];
+            if (students.length === 0) {
+                container.innerHTML = '<div class="text-slate-400 text-sm">暂无活跃度数据</div>';
+                return;
+            }
+            
+            // 模拟最近7天活跃度
+            const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            const activities = days.map(() => Math.floor(Math.random() * students.length * 0.7));
+            const maxActivity = Math.max(...activities);
+            
+            container.innerHTML = `
+                <div class="w-full h-full flex items-end justify-between px-4">
+                    ${days.map((day, i) => `
+                        <div class="flex flex-col items-center" style="height: 100%">
+                            <div class="text-xs text-slate-500 mb-1">${day}</div>
+                            <div class="w-6 rounded-t-lg bg-gradient-to-t from-indigo-500 to-indigo-300 transition-all duration-500" 
+                                 style="height: ${activities[i] === 0 ? '5px' : (activities[i] / maxActivity * 90 + 10) + '%'}"></div>
+                            <div class="text-xs font-medium mt-1">${activities[i]}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function refreshScoreChart() {
+            updateScoreChart();
+        }
+
+        function refreshActivityChart() {
+            updateActivityChart();
+        }
+
+        // 生成班级报告
+        function generateClassReport() {
+            const cls = CLASSES_DATA[currentClassId];
+            if (!cls || !cls.students || cls.students.length === 0) {
+                alert('当前班级没有学生数据，无法生成报告');
+                return;
+            }
+            
+            const students = cls.students;
+            const total = students.length;
+            const totalAc = students.reduce((sum, s) => sum + (Number(s.ac) || 0), 0);
+            const avgAc = (totalAc / total).toFixed(1);
+            const avgScore = Math.round(students.reduce((sum, s) => sum + (Number(s.score) || 0), 0) / total);
+            const maxScore = Math.max(...students.map(s => Number(s.score) || 0));
+            const minScore = Math.min(...students.map(s => Number(s.score) || 0));
+            const activeCount = students.filter(s => (Number(s.ac) || 0) > 0).length;
+            const activeRate = Math.round((activeCount / total) * 100);
+            
+            // 生成报告HTML
+            const reportHTML = `
+                <div class="space-y-4">
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-slate-800">${escapeHtml(cls.name)} 班级报告</h3>
+                        <p class="text-sm text-slate-500">生成时间: ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-500">班级人数</div>
+                            <div class="text-2xl font-bold text-slate-800">${total} 人</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-500">平均分</div>
+                            <div class="text-2xl font-bold text-indigo-600">${avgScore}</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-500">最高分</div>
+                            <div class="text-2xl font-bold text-emerald-600">${maxScore}</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-500">活跃率</div>
+                            <div class="text-2xl font-bold text-amber-600">${activeRate}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-slate-800 mb-3">成绩分布</h4>
+                        <div class="space-y-2">
+                            ${['0-59', '60-69', '70-79', '80-89', '90-100'].map(range => {
+                                const count = students.filter(s => {
+                                    const score = Number(s.score) || 0;
+                                    if (range === '0-59') return score < 60;
+                                    if (range === '60-69') return score >= 60 && score < 70;
+                                    if (range === '70-79') return score >= 70 && score < 80;
+                                    if (range === '80-89') return score >= 80 && score < 90;
+                                    return score >= 90;
+                                }).length;
+                                const percent = total === 0 ? 0 : Math.round((count / total) * 100);
+                                return `
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-slate-600">${range}分</span>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                                <div class="h-full bg-indigo-500" style="width: ${percent}%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-slate-800">${count}人 (${percent}%)</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-slate-800 mb-3">学生成绩排名 (前10名)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">排名</th>
+                                        <th class="px-3 py-2 text-left">学号</th>
+                                        <th class="px-3 py-2 text-left">姓名</th>
+                                        <th class="px-3 py-2 text-left">总分</th>
+                                        <th class="px-3 py-2 text-left">AC题数</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${students
+                                        .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0))
+                                        .slice(0, 10)
+                                        .map((s, idx) => `
+                                            <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                                                <td class="px-3 py-2">${idx + 1}</td>
+                                                <td class="px-3 py-2 font-mono">${escapeHtml(s.id)}</td>
+                                                <td class="px-3 py-2">${escapeHtml(s.name)}</td>
+                                                <td class="px-3 py-2 font-bold ${(Number(s.score) || 0) >= 80 ? 'text-emerald-600' : (Number(s.score) || 0) >= 60 ? 'text-amber-600' : 'text-rose-600'}">${s.score || 0}</td>
+                                                <td class="px-3 py-2">${s.ac || 0}</td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center text-sm text-slate-500">
+                        报告已生成，建议保存或打印此页面。
+                    </div>
+                </div>
+            `;
+            
+            // 显示报告模态框
+            showClassReportModal(reportHTML);
+        }
+
+        function showClassReportModal(content) {
+            // 创建或更新报告模态框
+            let modal = document.getElementById('classReportModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'classReportModal';
+                modal.className = 'fixed inset-0 z-[110] hidden items-center justify-center p-4';
+                modal.innerHTML = `
+                    <div class="absolute inset-0 bg-slate-950/60 modal-mask" onclick="closeClassReportModal()"></div>
+                    <div class="relative w-full max-w-4xl h-[80vh] rounded-2xl border border-slate-700 bg-white shadow-2xl overflow-hidden flex flex-col">
+                        <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+                            <div class="text-slate-800 font-semibold">班级成绩分析报告</div>
+                            <div class="flex gap-2">
+                                <button onclick="printClassReport()" class="px-3 py-1.5 text-sm border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition">打印</button>
+                                <button onclick="closeClassReportModal()" class="text-slate-400 hover:text-slate-800">✕</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-6" id="classReportContent"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            
+            document.getElementById('classReportContent').innerHTML = content;
+            showModal('classReportModal');
+        }
+
+        function closeClassReportModal() {
+            hideModal('classReportModal');
+        }
+
+        function printClassReport() {
+            const content = document.getElementById('classReportContent').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>班级成绩报告</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+                        h3 { color: #1e293b; }
+                        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f8fafc; }
+                        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+                        .stat-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; text-align: center; }
+                        .stat-value { font-size: 24px; font-weight: bold; margin: 5px 0; }
+                        .stat-label { color: #64748b; font-size: 14px; }
+                        @media print {
+                            body { margin: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${content}
+                    <div class="no-print" style="margin-top: 30px; text-align: center; color: #94a3b8; font-size: 12px;">
+                        使用 CodeEdu 教学平台生成
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
+        function closeContestBuilderModal() {
+            hideModal('contestBuilderModal');
+            contestBuilderEditingId = null;
+        }
+
+        function renderContestBuilderProblemList() {
+            const container = document.getElementById('builderProblemList');
+            if(!container) return;
+            const keyword = (document.getElementById('contestProblemSearchInput').value || '').trim().toLowerCase();
+            
+            container.replaceChildren();
+
+            const entries = getProblemEntriesSorted().filter(([key, problem]) => {
+                const text = `${problem.id} ${problem.title} ${(problem.tags ||[]).join(' ')}`.toLowerCase();
+                return !keyword || text.includes(keyword);
+            });
+
+            if (entries.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 py-8">无符合条件的题目。</div>`;
+                return;
+            }
+
+            entries.forEach(([key, p]) => {
+                const checked = contestBuilderSelected.has(key);
+                const div = document.createElement('div');
+                div.className = `flex items-center gap-3 p-3 mb-2 rounded-xl border ${checked ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-800 bg-slate-900'} cursor-pointer transition`;
+                div.onclick = () => toggleContestProblem(key);
+                
+                div.innerHTML = `
+                    <div class="${checked ? 'text-indigo-400' : 'text-slate-600'} shrink-0">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            ${checked ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>' : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>'}
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-sm font-medium truncate ${checked ? 'text-indigo-300' : 'text-slate-200'}">No.${escapeHtml(p.id)} ${escapeHtml(p.title)}</div>
+                        <div class="text-xs ${checked ? 'text-indigo-400/70' : 'text-slate-500'} mt-0.5">${escapeHtml(p.difficulty)} · ${(p.tags||[]).join(' / ')}</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleContestProblem(key) {
+            if (contestBuilderSelected.has(key)) {
+                contestBuilderSelected.delete(key);
+            } else {
+                contestBuilderSelected.add(key);
+            }
+            renderContestBuilderProblemList();
+            updateSelectedProblemSummary();
+        }
+
+        function selectAllContestProblemsFiltered() {
+            const keyword = (document.getElementById('contestProblemSearchInput').value || '').trim().toLowerCase();
+            getProblemEntriesSorted().forEach(([key, problem]) => {
+                const text = `${problem.id} ${problem.title} ${(problem.tags ||[]).join(' ')}`.toLowerCase();
+                if (!keyword || text.includes(keyword)) {
+                    contestBuilderSelected.add(key);
+                }
+            });
+            renderContestBuilderProblemList();
+            updateSelectedProblemSummary();
+        }
+
+        function clearContestProblemSelection() {
+            contestBuilderSelected.clear();
+            renderContestBuilderProblemList();
+            updateSelectedProblemSummary();
+        }
+
+        function updateSelectedProblemSummary() {
+            const container = document.getElementById('selectedProblemSummary');
+            if(!container) return;
+            
+            if (contestBuilderSelected.size === 0) {
+                container.textContent = '尚未选择题目。可以在右侧点击选择。';
+                return;
+            }
+            const titles = Array.from(contestBuilderSelected).map(k => PROBLEM_DATA[k] ? `No.${PROBLEM_DATA[k].id}` : `未知`);
+            container.innerHTML = `已选 <strong class="text-emerald-400 text-base">${contestBuilderSelected.size}</strong> 题：<br/>${escapeHtml(titles.join(', '))}`;
+        }
+
+        function saveContestFromBuilder() {
+            const title = document.getElementById('contestTitleInput').value.trim();
+            const status = document.getElementById('contestStatusInput').value;
+            const count = document.getElementById('contestCountInput').value;
+            const time = document.getElementById('contestTimeInput').value.trim();
+            const desc = document.getElementById('contestDescInput').value.trim();
+            const extraJson = document.getElementById('contestExtraJsonInput').value.trim();
+
+            if (!title) {
+                alert('请填写比赛 / 测验名称！');
+                return;
+            }
+
+            // 处理可能附加进去的 JSON 自定义新题
+            if (extraJson) {
+                try {
+                    const parsed = JSON.parse(extraJson);
+                    const newKeys = mergeProblemsIntoBank(parsed);
+                    newKeys.forEach(k => contestBuilderSelected.add(k));
+                } catch(e) {
+                    alert('附加题目 JSON 解析失败，请检查格式：\n' + e.message);
+                    return;
+                }
+            }
+
+            if (contestBuilderSelected.size === 0) {
+                alert('试卷是空的！请至少选择或导入一道题目。');
+                return;
+            }
+
+            const contestData = {
+                id: contestBuilderEditingId || uid('contest'),
+                title, status, count, time, desc,
+                problemKeys: Array.from(contestBuilderSelected)
+            };
+
+            // 如果是编辑已有比赛，就覆盖；否则作为新比赛排在最前面
+            if (contestBuilderEditingId) {
+                const idx = CONTEST_DATA.findIndex(c => c.id === contestBuilderEditingId);
+                if (idx > -1) CONTEST_DATA[idx] = contestData;
+            } else {
+                CONTEST_DATA.unshift(contestData);
+            }
+
+            // 数据固化保存
+            localStorage.setItem('oj_contests', JSON.stringify(CONTEST_DATA));
+            
+            // 刷新大厅视图
+            renderContestList();
+            renderDashboardProblems(); // 更新题库统计状态
+            
+            closeContestBuilderModal();
+            alert('发布成功！');
+        }
+
+        // ==========================================
+        // 初始化绑定及启动钩子
+        // ==========================================
+        function bindEvents() {
+            // 点击模态框阴影区域自动关闭
+            document.querySelectorAll('.modal-mask').forEach(mask => {
+                mask.addEventListener('click', function() {
+                    const parentId = this.parentNode.id;
+                    hideModal(parentId);
+                });
+            });
+
+            // 监听“导入大厅 JSON”的文件选择器，并利用 FileReader 自动读取文件内容填入文本框
+            const importJsonFileInput = document.getElementById('importJsonFileInput');
+            if (importJsonFileInput) {
+                importJsonFileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        document.getElementById('importJsonInput').value = evt.target.result;
+                    };
+                    reader.readAsText(file);
+                });
+            }
+
+            // 监听“组卷页面 JSON”的文件选择器
+            const contestJsonFileInput = document.getElementById('contestJsonFileInput');
+            if (contestJsonFileInput) {
+                contestJsonFileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        document.getElementById('contestExtraJsonInput').value = evt.target.result;
+                    };
+                    reader.readAsText(file);
+                });
+            }
+        }
+
+        function init() {
+            // 1. 读取系统基础配置与用户画像
+            loadSystemSettings();
+            
+            // 2. 装载从 LocalStorage 存下来的各类缓存数据
+            loadStorageData();
+
+            // 3. 恢复上次正在做的题目和语言
+            let savedPid = localStorage.getItem('oj_last_problem');
+            const allowedKeys = getWorkspaceProblemKeys();
+            if (!savedPid || !allowedKeys.includes(savedPid)) {
+                savedPid = allowedKeys[0] || "1";
+            }
+            currentProblemKey = savedPid;
+            
+            let savedLang = localStorage.getItem('oj_last_language') || "python";
+            const problem = PROBLEM_DATA[currentProblemKey];
+            if (problem && (!problem.templates || !problem.templates[savedLang])) {
+                savedLang = Object.keys(problem.templates || {})[0] || "none";
+            }
+            currentLanguage = savedLang;
+            
+            // 4. 挂载所有拖拽、代码高亮缩进的事件钩子
+            initResizer();
+            initEditor();
+            bindEvents();
+            restoreLayoutWidth();
+            
+            // 5. 渲染大厅页面的各个表格
+            renderDashboardProblems();
+            renderContestList();
+            renderClassStudentList();
+            
+            // 6. 隐式准备好工作区数据，并在底部栏刷出就绪状态
+            switchProblem(savedPid, true);
+            renderSubmissionHistory();
+            setStatusText('Ready.', 'neutral');
+
+            // 7. 默认聚焦在大厅的第一个 Tab 上
+            switchDashboardTab('problems');
+        }
+
+        // 绑定页面装载完毕执行
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+    
+    <!-- 演示模式脚本 -->
+    <script src="demo-mode-simple.js"></script>
+    
+    <script>
+        // 在111.html的init函数中添加演示模式初始化
+        const originalInit = init;
+        init = function() {
+            originalInit();
+            // 初始化演示模式（只在init函数中初始化一次）
+            if (typeof demoMode !== 'undefined') {
+                demoMode.init();
+            }
+        };
+        
+        // 添加演示模式入口函数
+        function enterDemoMode() {
+            if (typeof demoMode !== 'undefined') {
+                demoMode.enterDemoMode();
+            } else {
+                alert('演示模式加载失败，请刷新页面重试。');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+username,password,name,role,email
+student10,123456,学生十,student,student10@example.com
+student11,123456,学生十一,student,student11@example.com
+student12,123456,学生十二,student,student12@example.com
+teacher3,123456,张老师,teacher,zhanglaoshi@example.com
+teacher4,123456,王老师,teacher,wanglaoshi@example.com
+admin3,123456,系统管理员,admin,sysadmin@example.com
